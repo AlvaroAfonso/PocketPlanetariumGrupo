@@ -1,3 +1,5 @@
 # PocketPlanetarium
 
-<img src="./teaser.gif" width="800" />
+<p align="center">
+  <img src="./teaser.gif" width="800" />
+</p>
