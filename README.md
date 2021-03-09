@@ -1,5 +1,5 @@
 # PocketPlanetarium
-### Creando Interfaces de Usuario - Práctica 3
+### Creando Interfaces de Usuario - Prácticas 3 y 4
 
 
 
