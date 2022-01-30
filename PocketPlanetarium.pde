@@ -72,6 +72,7 @@ void showLoadingScreen() {
   opacity += 2;
   if (opacity >= 255.0) opacity = 0.0;
   text("LOADING...", 0, 0);
+  fill(255);
 }
 
 void renderScene() {
