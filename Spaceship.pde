@@ -8,7 +8,7 @@ class Spaceship {
   float yaw = 0.0;
   float roll = 0.0;
   
-  PVector position = new PVector(0, 0, 100000);
+  PVector position = new PVector(0, 0, 50);
   
   Rotation orientation = new Rotation(0, 0, 0, 0, false);
   PVector direction = new PVector(0, 0, -1);      // Must be kept normalized
@@ -17,8 +17,8 @@ class Spaceship {
   
   PVector speed = new PVector(0, 0, 0);
   PVector acceleration = new PVector(0, 0, 0);
-  float maxSpeed = 1500 * 300000; // X times the speed of light
-  float engineAcceleration = 6;
+  float maxSpeed = 500 * 300000; // X times the speed of light
+  float engineAcceleration = 0.0025;
   
   
   Spaceship() {
@@ -79,7 +79,7 @@ class Spaceship {
     speed.add(acceleration);
     acceleration = new PVector(0, 0, 0);
     
-    if (speed.mag()*60 * DISTANCE_SCALE > maxSpeed) {
+    if (speed.mag()* 60 * DISTANCE_SCALE > maxSpeed) {
       speed.setMag((maxSpeed/DISTANCE_SCALE) / 60);
     }
         
@@ -95,12 +95,14 @@ class Spaceship {
     pushMatrix();    
       translate(width/2.0 + position.x, height/2.0 + position.y, position.z);  
       pushMatrix();
-        PMatrix billboardMatrix = generateBillboardMatrix(getMatrix());
-        resetMatrix();
-        applyMatrix(billboardMatrix);
+        if (mode == EXPLORE) {
+          PMatrix billboardMatrix = generateBillboardMatrix(getMatrix());
+          resetMatrix();
+          applyMatrix(billboardMatrix);
+        }
         //float[] cameraRotations = cameraControl.camera.getRotations();
         //rotateX();
-        scale(0.0055);
+        scale(0.0003);
         image(sprite, 0, 0);
       popMatrix();
     popMatrix();

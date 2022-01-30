@@ -11,10 +11,11 @@ HUD hud;
 SoundsManager soundsManager;
 
 private boolean loading;
+private float opacity = 0.0;
 
 public int SPEED_FACTOR = 1; // SPEED_FACTOR = 1 -> Earth's day = 2s
-public float DISTANCE_SCALE = 1E+4;
-public int SIZE_SCALE = 10;
+public float DISTANCE_SCALE = 1.537312278E+7;
+public float SIZE_SCALE = 20000;
 
 public float timeSinceLastStep; // seconds
 private float prevTime = 0;
@@ -51,31 +52,41 @@ void load() {
 }
 
 synchronized void draw() {
-  if (loading) {
-    background(0);
-    translate(width/2.0, height/2.0, 0);
-    textSize(900);
-    fill(color(255, 255, 255));
-    text("LOADING...", 0, 0);
-    return;
-  }
-  
-  //noCursor();
-  
   time = millis();
   timeSinceLastStep = (time - prevTime)/1000;
   prevTime = time;
+  
+  if (loading) {
+    showLoadingScreen();
+  } else {
+    renderScene();
+  }
+}
+
+void showLoadingScreen() {
+  background(0);
+  translate(width/2.0 - 25, height/2.0, -200);
+  textSize(10);
+  //fill(color(255, 255, 255));
+  fill(255, 255.0 - opacity);
+  opacity += 2;
+  if (opacity >= 255.0) opacity = 0.0;
+  text("LOADING...", 0, 0);
+}
+
+void renderScene() {
+  //noCursor();  
   
   background(milkyWay);  
   //background (0, 0, 0); 
   
   solarSystem.display(); 
-   
+
   noLights();
   
   spaceship.display();
   
-  perspective(PI/3.0,(float)width/height,1,10000000);
+  perspective(PI/3.0,(float)width/height,1, 900);
   
   if(showHUD) hud.show();
 }

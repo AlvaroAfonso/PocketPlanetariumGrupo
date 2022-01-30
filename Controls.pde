@@ -6,6 +6,15 @@ private final int D = 100;
 private final int X = 120;
 private final int SPACE = 32;
 
+/*
+private final int U = 117;
+private final int I = 105;
+private final int O = 111;
+private final int J = 106;
+private final int K = 107;
+private final int L = 108;
+*/
+
 public boolean moveForward = false;
 public boolean moveLeft = false;
 public boolean moveBackward = false;
@@ -13,6 +22,9 @@ public boolean moveRight = false;
 public boolean moveUp = false;
 public boolean moveDown = false;
 public boolean moveStop = false;
+
+public boolean speedUp = false;
+public boolean slowDown = false;
     
 
 void keyPressed() {
@@ -26,23 +38,17 @@ void keyPressed() {
   // ---------------- HUD CONTROLS ----------------
   if (key == TAB) {
     showHUD = !showHUD;
-    return;
   }
   
   // ---------------- TIME CONTROL ----------------
   if (key == CODED) {
     if (keyCode == UP) {
-      SPEED_FACTOR = SPEED_FACTOR == 1 ? SPEED_FACTOR + 9 : SPEED_FACTOR + 10;
-      if (SPEED_FACTOR > 10000) SPEED_FACTOR = 10000;
-      solarSystem.updateTimeParams();
+      speedUp = true;
     }
     
     if (keyCode == DOWN) {
-      SPEED_FACTOR -= 10;
-      if (SPEED_FACTOR < 1) SPEED_FACTOR = 1;
-      solarSystem.updateTimeParams();
+      slowDown = true;
     }
-    return;
   }
   
   // ---------------- SPACESHIP CONTROLS ----------------  
@@ -67,9 +73,43 @@ void keyPressed() {
   if (key == R) {
     moveStop = true;
   }
+  
+  /*
+  float step = 0.1;
+  
+  if (key == U) {
+    lightFall.x += step;
+  }
+  if (key == I) {
+    lightFall.y += step;
+  }
+  if (key == O) {
+    lightFall.z += step;
+  }
+  if (key == J) {
+    lightFall.x -= step;
+  }
+  if (key == K) {
+    lightFall.y -= step;
+  }
+  if (key == L) {
+    lightFall.z -= step;
+  }
+  println(lightFall);
+  */
 }
 
 void keyReleased() {
+  if (key == CODED) {
+    if (keyCode == UP) {
+      speedUp = false;
+    }
+    
+    if (keyCode == DOWN) {
+      slowDown = false;
+    }
+  }
+  
   if (key == W) {
     moveForward = false;
   }

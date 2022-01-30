@@ -18,6 +18,8 @@ class AstronomicalBody {
   float centralBodyMass;      // Solar Mass units
   float semi_major_axis;      // P.E.
   float eccentricity;
+  float semi_minor_axis;
+  float linear_eccentricity;
   float orbitalInclination;
   float orbitalPeriod;        // P.E.
   
@@ -65,6 +67,8 @@ class AstronomicalBody {
     this.rotationPeriod = rotationPeriod; 
     this.semi_major_axis = semi_major_axis * astronomicalUnit;
     this.eccentricity = eccentricity;
+    this.semi_minor_axis = sqrt(-pow(this.semi_major_axis, 2) * (pow(eccentricity, 2) - 1));
+    this.linear_eccentricity = sqrt(pow(this.semi_major_axis, 2) - pow(semi_minor_axis, 2));
     this.orbitalInclination = orbitalInclination;
     this.orbitalPeriod = orbitalPeriod;
     this.currentOrbitalAngle = random(-TWO_PI,TWO_PI);
@@ -98,18 +102,6 @@ class AstronomicalBody {
     
     rotateAxial();
     orbitate();
-    
-    /*
-    if(this.name.equals("Earth")) {
-      print("Displaying " + this.name);
-      println("\n\tCurrent Rotation Period: " + rotationPeriod * earthOrbitalPeriod + " s"
-              + "\n\tCurrent Rotation Angular Speed: " + TWO_PI / (rotationPeriod * earthOrbitalPeriod) + " rad/s"
-              + "\n\tCurrent Orbital Angular Speed: " + currentAngularSpeed + " rad/s"
-              + "\n\tExpected Orbit time: " + TWO_PI / currentAngularSpeed/60 + " min"
-              + "\n\tTime since last draw: " + timeSinceLastStep + " s"
-              );
-    } 
-    */
             
     // --------------------------- Inclinación de orbita
     rotateZ(radians(-orbitalInclination));
@@ -154,17 +146,13 @@ class AstronomicalBody {
     // --------------------------- Orbit Display
     if (eccentricity > 0.0) {
       pushMatrix();
-        float a = semi_major_axis + centralBodyRadius + this.radius;
-        float b = sqrt(-pow(semi_major_axis, 2) * (pow(eccentricity, 2) - 1)) + centralBodyRadius + this.radius;
-        //translate(-sqrt(pow(a, 2) - pow(b, 2)), 0, 0);
-        //translate(-eccentricity*a, 0, 0);
-            
+        translate(linear_eccentricity, 0, 0);
         pushMatrix();
           //rotateY(PI/2.0);
           rotateX(PI/2.0);
           stroke(255);
           noFill();
-          ellipse(0, 0, 2 * a, 2 * b );
+          ellipse(0, 0, 2 * (semi_major_axis + centralBodyRadius + this.radius), 2 * (semi_minor_axis + centralBodyRadius + this.radius));
           noStroke();
         popMatrix();
       popMatrix();
@@ -190,9 +178,11 @@ class AstronomicalBody {
         PMatrix billboardMatrix = generateBillboardMatrix(getMatrix());
         resetMatrix();
         applyMatrix(billboardMatrix);
-        translate(radius > 200 ? -900 : -400, -2 * radius, 0);
+        //translate(radius > 200 ? -900 : -400, -2 * radius, 0);
+        translate(-min(radius, 0.75), -1.2*radius);
         fill(color(255, 255, 255));
-        textSize(radius > 200 ? 900 : 400);
+        //textSize(radius > 200 ? 900 : 400);
+        textSize(2 * min(radius, 0.7));
         text(name, 0, 0);
       popMatrix();
 

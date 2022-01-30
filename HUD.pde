@@ -18,7 +18,7 @@ class HUD {
   private final int LEFT_MARGIN = 50;
   private final int TOP_MARGIN = 70;
   
-  private final int TEXT_SIZE = 25;
+  private final int TEXT_SIZE = 15;
   private final int LINE_SPACING = TEXT_SIZE + 5;
   private final int PARAGRAPH_SPACING = TEXT_SIZE + 45;
   

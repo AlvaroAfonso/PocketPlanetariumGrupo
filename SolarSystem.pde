@@ -12,10 +12,12 @@ public float earthOrbitalPeriod =  365 * earthRotationPeriod;
 
 public float GRAVITATIONAL_CONSTANT = 39.478 * pow(astronomicalUnit, 3) /  pow(earthOrbitalPeriod, 2); // AU^3 / (years^2 * SolarMass)
 
+public PVector lightFall = new PVector(-4.799998, 0.5, -1.4901161E-8);
+
 
 class SolarSystem {
   
-  final AstronomicalBody sun = new AstronomicalBody("Sun", 1, 16, 0, 0.0686301);
+  final AstronomicalBody sun = new AstronomicalBody("Sun", 1, 109 * earthRadius, 0, 0.0686301);
   
   SolarSystem(){
     PImage sunTexture = loadImage("./data/images/Sun.jpg");
@@ -31,12 +33,12 @@ class SolarSystem {
       
       //if (!planet.name.equals("Earth")) continue;
       
-      PImage planetTexture = loadImage("./data/images/Planets/" + planet.name + ".jpg");
+      PImage planetTexture = loadImage("./data/images/Low-Res Planets/" + planet.name + ".jpg");
       planet.model.setTexture(planetTexture);
       loadPlanetMoons(moons, planet);
       sun.orbitatingBodies.add(planet);
       
-      //if (planet.name.equals("Mercury")) break;
+      //if (planet.name.equals("Earth")) break;
     }
 
   }
@@ -47,8 +49,8 @@ class SolarSystem {
       if (moonPlanet.compareTo(planet.name) > 0) return; 
       if (moonPlanet.equals(planet.name)) {
         AstronomicalBody moon = createAstronomicalBody(moonRow, planet.radius, planet.mass);
-        PImage moonTexture = loadImage("./data/images/Moons/" + moon.name + ".jpg");
-        moon.model.setTexture(moonTexture);
+        //PImage moonTexture = loadImage("./data/images/Moons/" + moon.name + ".jpg");
+        //moon.model.setTexture(moonTexture);
         planet.orbitatingBodies.add(moon);
       }
     }
@@ -68,6 +70,15 @@ class SolarSystem {
   }
   
   void updateTimeParams() {
+    if (speedUp) {
+      SPEED_FACTOR = SPEED_FACTOR == 1 ? SPEED_FACTOR + 9 : SPEED_FACTOR + 10;
+      if (SPEED_FACTOR > 10000) SPEED_FACTOR = 10000;
+    } else if (slowDown) {
+      SPEED_FACTOR -= 10;
+      if (SPEED_FACTOR < 1) SPEED_FACTOR = 1;
+    } else {
+      return;
+    }
     time_acceleration =  30 * 60 * 24 * SPEED_FACTOR; 
     earthRotationPeriod = 60 * 60 * 24 / time_acceleration; 
     earthOrbitalPeriod =  365 * earthRotationPeriod;
@@ -75,6 +86,7 @@ class SolarSystem {
   }
   
   void display() {
+    updateTimeParams();
     pushMatrix();
     translate (width/2, height/2, 0);
     activateLights();
@@ -88,7 +100,7 @@ class SolarSystem {
   
   void activateLights() {
     pointLight(255, 255, 255, 0, 0, 0); 
-    lightFalloff(0, 0.00000001 , 0.000000012);
+    lightFalloff(lightFall.x, lightFall.y, lightFall.z);
     ambientLight(255, 255, 255, 0, 0, 0);
   }
   
