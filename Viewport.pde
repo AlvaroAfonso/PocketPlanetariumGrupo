@@ -32,6 +32,9 @@ class MatchViewport implements Viewport {
     canvas.beginDraw();
       canvas.background(0); 
       gameWorld.display(true);
+      for (Player player : players) {
+        //player.spaceship.display();
+      }
       //canvas.camera(cam.eye.x, cam.eye.y, cam.eye.z, cam.center.x, cam.center.y, cam.center.z, cam.up.x, cam.up.y, cam.up.z);
     canvas.endDraw();
     image(canvas, screenCoords.x, screenCoords.y);

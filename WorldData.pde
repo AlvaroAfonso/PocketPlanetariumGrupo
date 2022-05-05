@@ -15,6 +15,7 @@ public float GRAVITATIONAL_CONSTANT = 39.478 * pow(astronomicalUnit, 3) /  pow(e
 public PVector lightFall = new PVector(-4.799998, 0.5, -1.4901161E-8);
 
 
+
 class WorldData {
   
   final AstronomicalBody sun = new AstronomicalBody("Sun", 1, 109 * earthRadius, 0, 0.0686301);
@@ -77,6 +78,8 @@ class WorldData {
   }
 
 }
+
+
 
 class AstronomicalBody {
   

@@ -21,6 +21,18 @@ class WorldRender {
     }
   }
   
+  public void display(boolean displayData) {
+    canvas.pushMatrix();
+      canvas.translate (width/2, height/2, 0);
+      canvas.pointLight(255, 255, 255, 0, 0, 0);
+      displayAstronomicalBody(worldData.sun);
+      if (displayData) {
+        //canvas.noLights();
+        //displayAstronomicalBodyData(worldData.sun);
+      }
+    canvas.popMatrix();
+  }
+  
   private void generateAstronomicalBodyMesh(AstronomicalBody body, String texturePath) {
     PShape mesh = canvas.createShape(SPHERE, body.radius);
     if (texturePath != null) {
@@ -52,9 +64,15 @@ class WorldRender {
       //model.rotateY(TWO_PI / (rotationPeriod * earthOrbitalPeriod)); 
       canvas.rotateY(body.currentRotationAngle);
        
-      
-      // ----------------------------------------- Display
-      canvas.shape(astronomicalBodyMeshes.get(body.name));
+      if (body.name == "Sun") {
+        canvas.pushStyle();
+          canvas.noLights();
+          canvas.shape(astronomicalBodyMeshes.get(body.name));
+        canvas.popStyle();
+      } else {
+        // ----------------------------------------- Display
+        canvas.shape(astronomicalBodyMeshes.get(body.name));
+      }
         
     canvas.popMatrix();
     
@@ -119,24 +137,6 @@ class WorldRender {
     
     // --------------------------- Inclinación de orbita
     canvas.rotateZ(radians(body.orbitalInclination));    
-  }
-  
-  public void display(boolean displayData) {
-    canvas.pushMatrix();
-      canvas.translate (width/2, height/2, 0);
-      //activateLights(canvas);
-      displayAstronomicalBody(worldData.sun);
-      if (displayData) {
-        canvas.noLights();
-        //displayAstronomicalBodyData(worldData.sun);
-      }
-    canvas.popMatrix();
-  }
-  
-  void activateLights(PGraphics canvas) {
-    canvas.pointLight(255, 255, 255, 0, 0, 0); 
-    canvas.lightFalloff(lightFall.x, lightFall.y, lightFall.z);
-    canvas.ambientLight(255, 255, 255, 0, 0, 0);
   }
   
 }
