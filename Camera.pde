@@ -10,9 +10,9 @@ class CameraControl {
   private PApplet parent;
   private PeasyCam camera;
   
-  CameraControl(PApplet parent) {
+  CameraControl(PApplet parent, PGraphics pg) {
     this.parent = parent;
-    camera = new PeasyCam(parent, width/2.0, height/2.0, 0, CAMERA_DEFAULT_DISTANCE); // (height/2.0)/tan(PI*30.0/180.0)
+    camera = new PeasyCam(parent, pg, width/2.0, height/2.0, 0, CAMERA_DEFAULT_DISTANCE); // (height/2.0)/tan(PI*30.0/180.0)
     //camera.setMinimumDistance(0.0000000001);
     camera.setMaximumDistance(CAMERA_MAX_DISTANCE);
   }

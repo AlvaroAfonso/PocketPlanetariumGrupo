@@ -4,7 +4,7 @@
 
 
 PImage milkyWay;
-SolarSystem solarSystem;
+WorldRender solarSystem;
 Spaceship spaceship;
 CameraControl cameraControl;
 HUD hud;
@@ -27,6 +27,9 @@ final int EXPLORE = 1;
 int mode = GENERAL_VIEW;
 boolean showHUD = true;
 
+PGraphics pg1;
+PGraphics pg2;
+
 void setup() {
   fullScreen(P3D);
   //size(1800 ,1500 ,P3D) ;
@@ -34,16 +37,23 @@ void setup() {
   loading = true;
   soundsManager = new SoundsManager(this);
   soundsManager.playBackgroundMusic();
-  cameraControl = new CameraControl(this); 
   hud = new HUD();
+  
+  pg1 = createGraphics(width/2, height, P3D);
+  pg2 = createGraphics(width/2, height, P3D);
+  
+  cameraControl = new CameraControl(this, pg1); 
+  
   thread("load");
 }
 
 void load() {
   milkyWay = loadImage("./data/images/Milky Way.jpg");
   milkyWay.resize(displayWidth, displayHeight);
-  solarSystem = new SolarSystem();
-  spaceship = new Spaceship();
+  solarSystem = new WorldRender();
+  //spaceship = new Spaceship();
+  
+  solarSystem.render(pg1);
   
   synchronized(this) {
     loading = false;
@@ -77,17 +87,19 @@ void showLoadingScreen() {
 
 void renderScene() {
   //noCursor();  
+  solarSystem.update();
   
-  background(milkyWay);  
+  //pg1.background(milkyWay);  
   //background (0, 0, 0); 
+  pg1.beginDraw();
+  pg1.background(0);  
+  solarSystem.display(pg1, showHUD); 
+  pg1.noLights();
+  //spaceship.display(pg1);
+  //pg1.perspective(PI/3.0,(float)width/height,1, 900);
+  pg1.endDraw();
   
-  solarSystem.display(); 
-
-  noLights();
+  image(pg1, 0, 0);
   
-  spaceship.display();
-  
-  perspective(PI/3.0,(float)width/height,1, 900);
-  
-  if(showHUD) hud.show();
+  //if(showHUD) hud.show();
 }

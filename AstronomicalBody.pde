@@ -41,7 +41,6 @@ class AstronomicalBody {
     this.axialTilt = axialTilt;
     // ---------------------------- Both Orbitation & Rotation periods are expected in Earth years
     this.rotationPeriod = rotationPeriod; 
-    model = createShape(SPHERE, this.radius);
     orbitatingBodies = new ArrayList();
     
     println("Creating: " + this.name
@@ -72,7 +71,6 @@ class AstronomicalBody {
     this.orbitalInclination = orbitalInclination;
     this.orbitalPeriod = orbitalPeriod;
     this.currentOrbitalAngle = random(-TWO_PI,TWO_PI);
-    model = createShape(SPHERE, this.radius);
     orbitatingBodies = new ArrayList();
     println("Creating: " + this.name
              + "\n\tAxial_tilt: " + this.axialTilt
@@ -98,101 +96,112 @@ class AstronomicalBody {
       if (currentOrbitalAngle > TWO_PI || currentOrbitalAngle < -TWO_PI) currentOrbitalAngle = 0;
   }
   
-  void display() { 
-    
+  void update() {
     rotateAxial();
     orbitate();
-            
+    for (AstronomicalBody orbitatingBody : orbitatingBodies) {
+      orbitatingBody.update();
+    }
+  }
+  
+  void render(PGraphics canvas, String texturePath) {
+    model = canvas.createShape(SPHERE, this.radius);
+    if (texturePath != null) {
+      PImage texture = loadImage(texturePath);
+      model.setTexture(texture);
+    } 
+  }
+  
+  void display(PGraphics canvas) {        
     // --------------------------- Inclinación de orbita
-    rotateZ(radians(-orbitalInclination));
+    canvas.rotateZ(radians(-orbitalInclination));
     
      // -------------------------------- Posición angular
-    rotateY(currentOrbitalAngle);      
+    canvas.rotateY(currentOrbitalAngle);      
     
-    pushMatrix();
+    canvas.pushMatrix();
       // ----------------------------- Distancia al centro
-      translate(distanceToCentralBody,0,0);
+      canvas.translate(distanceToCentralBody,0,0);
   
       // OrbitatingBodies
       for (AstronomicalBody orbitatingBody : orbitatingBodies) {
-        orbitatingBody.display();
+        orbitatingBody.display(canvas);
       }
       
       // ------------------------------- Inclinación axial
-      rotateZ(radians(axialTilt));
+      canvas.rotateZ(radians(axialTilt));      
    
       // ---------------------------------------- Rotacion
       //model.rotateY(TWO_PI / (rotationPeriod * earthOrbitalPeriod)); 
-      rotateY(currentRotationAngle);
+      canvas.rotateY(currentRotationAngle);
        
       
       // ----------------------------------------- Display
-      shape(model);
+      canvas.shape(model);
         
-    popMatrix();
+    canvas.popMatrix();
     
     // -------------------------------- Posición angular
-    rotateY(-currentOrbitalAngle);  
+    canvas.rotateY(-currentOrbitalAngle);  
     
     // --------------------------- Inclinación de orbita
-    rotateZ(radians(orbitalInclination));
+    canvas.rotateZ(radians(orbitalInclination));
   }
-  
-  
-  void displayData() {    
+ 
+  void displayData(PGraphics canvas) {    
     // --------------------------- Inclinación de orbita
-    rotateZ(radians(-orbitalInclination));
+    canvas.rotateZ(radians(-orbitalInclination));
     
     // --------------------------- Orbit Display
     if (eccentricity > 0.0) {
-      pushMatrix();
-        translate(linear_eccentricity, 0, 0);
-        pushMatrix();
+      canvas.pushMatrix();
+        canvas.translate(linear_eccentricity, 0, 0);
+        canvas.pushMatrix();
           //rotateY(PI/2.0);
-          rotateX(PI/2.0);
-          stroke(255);
-          noFill();
-          ellipse(0, 0, 2 * (semi_major_axis + centralBodyRadius + this.radius), 2 * (semi_minor_axis + centralBodyRadius + this.radius));
-          noStroke();
-        popMatrix();
-      popMatrix();
+          canvas.rotateX(PI/2.0);
+          canvas.stroke(255);
+          canvas.noFill();
+          canvas.ellipse(0, 0, 2 * (semi_major_axis + centralBodyRadius + this.radius), 2 * (semi_minor_axis + centralBodyRadius + this.radius));
+          canvas.noStroke();
+        canvas.popMatrix();
+      canvas.popMatrix();
     }
     
     // -------------------------------- Posición angular
-    rotateY(currentOrbitalAngle);      
+    canvas.rotateY(currentOrbitalAngle);      
     
-    pushMatrix();
+    canvas.pushMatrix();
       // ----------------------------- Distancia al centro
-      translate(distanceToCentralBody,0,0);
+      canvas.translate(distanceToCentralBody,0,0);
   
       // OrbitatingBodies
       for (AstronomicalBody orbitatingBody : orbitatingBodies) {
-        orbitatingBody.displayData();
+        orbitatingBody.displayData(canvas);
       }
       
       // ------------------------------- Inclinación axial
-      rotateZ(radians(axialTilt));
+      canvas.rotateZ(radians(axialTilt));
       
       // ------------------------------- Name Display
-      pushMatrix();
+      canvas.pushMatrix();
         PMatrix billboardMatrix = generateBillboardMatrix(getMatrix());
-        resetMatrix();
-        applyMatrix(billboardMatrix);
+        canvas.resetMatrix();
+        canvas.applyMatrix(billboardMatrix);
         //translate(radius > 200 ? -900 : -400, -2 * radius, 0);
-        translate(-min(radius, 0.75), -1.2*radius);
-        fill(color(255, 255, 255));
+        canvas.translate(-min(radius, 0.75), -1.2*radius);
+        canvas.fill(color(255, 255, 255));
         //textSize(radius > 200 ? 900 : 400);
-        textSize(2 * min(radius, 0.7));
-        text(name, 0, 0);
-      popMatrix();
+        canvas.textSize(2 * min(radius, 0.7));
+        canvas.text(name, 0, 0);
+      canvas.popMatrix();
 
-    popMatrix();
+    canvas.popMatrix();
     
     // -------------------------------- Posición angular
-    rotateY(-currentOrbitalAngle);  
+    canvas.rotateY(-currentOrbitalAngle);  
     
     // --------------------------- Inclinación de orbita
-    rotateZ(radians(orbitalInclination));  
+    canvas.rotateZ(radians(orbitalInclination));  
   }
   
   String toString() {

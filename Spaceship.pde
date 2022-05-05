@@ -85,26 +85,26 @@ class Spaceship {
         
   }
   
-  void display() {
+  void display(PGraphics canvas) {
     
     if (mode == EXPLORE){
       updateSpaceshipOrientation();
       move();
     }
     
-    pushMatrix();    
-      translate(width/2.0 + position.x, height/2.0 + position.y, position.z);  
-      pushMatrix();
+    canvas.pushMatrix();    
+      canvas.translate(width/2.0 + position.x, height/2.0 + position.y, position.z);  
+      canvas.pushMatrix();
         if (mode == EXPLORE) {
           PMatrix billboardMatrix = generateBillboardMatrix(getMatrix());
-          resetMatrix();
-          applyMatrix(billboardMatrix);
+          canvas.resetMatrix();
+          canvas.applyMatrix(billboardMatrix);
         }
         //float[] cameraRotations = cameraControl.camera.getRotations();
         //rotateX();
-        scale(0.0003);
-        image(sprite, 0, 0);
-      popMatrix();
-    popMatrix();
+        canvas.scale(0.0003);
+        canvas.image(sprite, 0, 0);
+      canvas.popMatrix();
+    canvas.popMatrix();
   }
 }
