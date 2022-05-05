@@ -2,14 +2,6 @@
 //import shapes3d.org.apache.commons.math.geometry.*;
 //import peasy.org.apache.commons.math.geometry.*;
 
-
-PImage milkyWay;
-WorldRender solarSystem;
-Spaceship spaceship;
-CameraControl cameraControl;
-HUD hud;
-SoundsManager soundsManager;
-
 private boolean loading;
 private float opacity = 0.0;
 
@@ -27,8 +19,17 @@ final int EXPLORE = 1;
 int mode = GENERAL_VIEW;
 boolean showHUD = true;
 
+PImage milkyWay;
+WorldData solarSystemData;
+Spaceship spaceship;
+CameraControl cameraControl;
+HUD hud;
+SoundsManager soundsManager;
+
 PGraphics pg1;
 PGraphics pg2;
+
+Viewport player1Viewport;
 
 void setup() {
   fullScreen(P3D);
@@ -50,10 +51,10 @@ void setup() {
 void load() {
   milkyWay = loadImage("./data/images/Milky Way.jpg");
   milkyWay.resize(displayWidth, displayHeight);
-  solarSystem = new WorldRender();
+  solarSystemData = new WorldData();
   //spaceship = new Spaceship();
   
-  solarSystem.render(pg1);
+  player1Viewport = new MatchViewport(new PVector(0, 0), pg1, solarSystemData);
   
   synchronized(this) {
     loading = false;
@@ -87,19 +88,17 @@ void showLoadingScreen() {
 
 void renderScene() {
   //noCursor();  
-  solarSystem.update();
+  solarSystemData.update();
   
   //pg1.background(milkyWay);  
   //background (0, 0, 0); 
-  pg1.beginDraw();
-  pg1.background(0);  
-  solarSystem.display(pg1, showHUD); 
-  pg1.noLights();
+  player1Viewport.renderGraphics();
+  //pg1.noLights();
   //spaceship.display(pg1);
   //pg1.perspective(PI/3.0,(float)width/height,1, 900);
-  pg1.endDraw();
+  //pg1.endDraw();
   
-  image(pg1, 0, 0);
+  
   
   //if(showHUD) hud.show();
 }

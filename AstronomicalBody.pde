@@ -1,4 +1,82 @@
+public float astronomicalUnit = 1.4959878707E+8 / DISTANCE_SCALE; // AU in kilometers
+public float time_acceleration =  30 * 60 * 24 * SPEED_FACTOR; 
+  
+  
+public final float SOLAR_MASS = 2E30;       // kg
+public final float EARTH_MASS = 5.9722E24;  // kg
 
+public float earthRadius = 6378/SIZE_SCALE; // km
+
+public float earthRotationPeriod = 60 * 60 * 24 / time_acceleration;
+public float earthOrbitalPeriod =  365 * earthRotationPeriod;
+
+public float GRAVITATIONAL_CONSTANT = 39.478 * pow(astronomicalUnit, 3) /  pow(earthOrbitalPeriod, 2); // AU^3 / (years^2 * SolarMass)
+
+public PVector lightFall = new PVector(-4.799998, 0.5, -1.4901161E-8);
+
+
+class WorldData {
+  
+  final AstronomicalBody sun = new AstronomicalBody("Sun", 1, 109 * earthRadius, 0, 0.0686301);
+  
+  public WorldData() {
+    Table planets = loadTable("./data/Planets.csv", "header");
+    Table moons = loadTable("./data/Moons.csv", "header");
+    for (TableRow planetRow : planets.rows()) {
+      AstronomicalBody planet = createAstronomicalBody(planetRow, sun.radius, sun.mass);
+      //if (!planet.name.equals("Earth")) continue;     
+      loadPlanetMoons(moons, planet);
+      sun.orbitatingBodies.add(planet);      
+      //if (planet.name.equals("Earth")) break;
+    }
+  }
+  
+  void loadPlanetMoons(Table moons, AstronomicalBody planet){
+    for (TableRow moonRow : moons.rows()) {
+      String moonPlanet = moonRow.getString("Planet");
+      if (moonPlanet.compareTo(planet.name) > 0) return; 
+      if (moonPlanet.equals(planet.name)) {
+        AstronomicalBody moon = createAstronomicalBody(moonRow, planet.radius, planet.mass);
+        planet.orbitatingBodies.add(moon);
+      }
+    }
+  }
+  
+  AstronomicalBody createAstronomicalBody(TableRow row, float attractorRadius, float attractorMass) {
+    String name = row.getString("Name");
+    float mass = row.getFloat("Mass") * EARTH_MASS / SOLAR_MASS; // Expected in SOLAR MASS units
+    float radius = row.getFloat("Radius");
+    float axialTilt = row.getFloat("Axial_tilt");
+    float rotationPeriod = row.getFloat("Rotation_period");
+    float semiMajorAxis = row.getFloat("Semi_major_axis");
+    float eccentricity = row.getFloat("Eccentricity");
+    float orbitalInclination = row.getFloat("Orbital_inclination");
+    float orbitalPeriod = row.getFloat("Orbital_period");
+    return new AstronomicalBody(name, mass, radius, attractorMass, attractorRadius, axialTilt, rotationPeriod, semiMajorAxis, eccentricity, orbitalInclination, orbitalPeriod);
+  }
+  
+  void updateTimeParams() {
+    if (speedUp) {
+      SPEED_FACTOR = SPEED_FACTOR == 1 ? SPEED_FACTOR + 9 : SPEED_FACTOR + 10;
+      if (SPEED_FACTOR > 10000) SPEED_FACTOR = 10000;
+    } else if (slowDown) {
+      SPEED_FACTOR -= 10;
+      if (SPEED_FACTOR < 1) SPEED_FACTOR = 1;
+    } else {
+      return;
+    }
+    time_acceleration =  30 * 60 * 24 * SPEED_FACTOR; 
+    earthRotationPeriod = 60 * 60 * 24 / time_acceleration; 
+    earthOrbitalPeriod =  365 * earthRotationPeriod;
+    GRAVITATIONAL_CONSTANT = 39.478 * pow(astronomicalUnit, 3) /  pow(earthOrbitalPeriod, 2); // AU^3 / (years^2 * SolarMass)
+  }
+  
+  void update() {
+    updateTimeParams();
+    sun.update();
+  }
+
+}
 
 class AstronomicalBody {
   
@@ -102,106 +180,6 @@ class AstronomicalBody {
     for (AstronomicalBody orbitatingBody : orbitatingBodies) {
       orbitatingBody.update();
     }
-  }
-  
-  void render(PGraphics canvas, String texturePath) {
-    model = canvas.createShape(SPHERE, this.radius);
-    if (texturePath != null) {
-      PImage texture = loadImage(texturePath);
-      model.setTexture(texture);
-    } 
-  }
-  
-  void display(PGraphics canvas) {        
-    // --------------------------- Inclinación de orbita
-    canvas.rotateZ(radians(-orbitalInclination));
-    
-     // -------------------------------- Posición angular
-    canvas.rotateY(currentOrbitalAngle);      
-    
-    canvas.pushMatrix();
-      // ----------------------------- Distancia al centro
-      canvas.translate(distanceToCentralBody,0,0);
-  
-      // OrbitatingBodies
-      for (AstronomicalBody orbitatingBody : orbitatingBodies) {
-        orbitatingBody.display(canvas);
-      }
-      
-      // ------------------------------- Inclinación axial
-      canvas.rotateZ(radians(axialTilt));      
-   
-      // ---------------------------------------- Rotacion
-      //model.rotateY(TWO_PI / (rotationPeriod * earthOrbitalPeriod)); 
-      canvas.rotateY(currentRotationAngle);
-       
-      
-      // ----------------------------------------- Display
-      canvas.shape(model);
-        
-    canvas.popMatrix();
-    
-    // -------------------------------- Posición angular
-    canvas.rotateY(-currentOrbitalAngle);  
-    
-    // --------------------------- Inclinación de orbita
-    canvas.rotateZ(radians(orbitalInclination));
-  }
- 
-  void displayData(PGraphics canvas) {    
-    // --------------------------- Inclinación de orbita
-    canvas.rotateZ(radians(-orbitalInclination));
-    
-    // --------------------------- Orbit Display
-    if (eccentricity > 0.0) {
-      canvas.pushMatrix();
-        canvas.translate(linear_eccentricity, 0, 0);
-        canvas.pushMatrix();
-          //rotateY(PI/2.0);
-          canvas.rotateX(PI/2.0);
-          canvas.stroke(255);
-          canvas.noFill();
-          canvas.ellipse(0, 0, 2 * (semi_major_axis + centralBodyRadius + this.radius), 2 * (semi_minor_axis + centralBodyRadius + this.radius));
-          canvas.noStroke();
-        canvas.popMatrix();
-      canvas.popMatrix();
-    }
-    
-    // -------------------------------- Posición angular
-    canvas.rotateY(currentOrbitalAngle);      
-    
-    canvas.pushMatrix();
-      // ----------------------------- Distancia al centro
-      canvas.translate(distanceToCentralBody,0,0);
-  
-      // OrbitatingBodies
-      for (AstronomicalBody orbitatingBody : orbitatingBodies) {
-        orbitatingBody.displayData(canvas);
-      }
-      
-      // ------------------------------- Inclinación axial
-      canvas.rotateZ(radians(axialTilt));
-      
-      // ------------------------------- Name Display
-      canvas.pushMatrix();
-        PMatrix billboardMatrix = generateBillboardMatrix(getMatrix());
-        canvas.resetMatrix();
-        canvas.applyMatrix(billboardMatrix);
-        //translate(radius > 200 ? -900 : -400, -2 * radius, 0);
-        canvas.translate(-min(radius, 0.75), -1.2*radius);
-        canvas.fill(color(255, 255, 255));
-        //textSize(radius > 200 ? 900 : 400);
-        canvas.textSize(2 * min(radius, 0.7));
-        canvas.text(name, 0, 0);
-      canvas.popMatrix();
-
-    canvas.popMatrix();
-    
-    // -------------------------------- Posición angular
-    canvas.rotateY(-currentOrbitalAngle);  
-    
-    // --------------------------- Inclinación de orbita
-    canvas.rotateZ(radians(orbitalInclination));  
   }
   
   String toString() {

@@ -9,6 +9,7 @@ interface Viewport {
 
 class MatchViewport implements Viewport {
 
+  private PVector screenCoords;
   private PGraphics canvas;
   
   private Player currentPlayer;
@@ -17,8 +18,10 @@ class MatchViewport implements Viewport {
   
   private Camera cam;
   
-  public MatchViewport(Player currentPlayer, Player[] players, WorldRender world) {
-  
+  public MatchViewport(PVector screenCoords, PGraphics canvas, WorldData world) {
+    this.screenCoords = screenCoords;
+    this.canvas = canvas;
+    this.gameWorld = new WorldRender(canvas, world);  
   }  
   
   public void update() {
@@ -26,8 +29,12 @@ class MatchViewport implements Viewport {
   }
   
   public void renderGraphics() {
-    gameWorld.display(canvas, true);
-    canvas.camera(cam.eye.x, cam.eye.y, cam.eye.z, cam.center.x, cam.center.y, cam.center.z, cam.up.x, cam.up.y, cam.up.z);
+    canvas.beginDraw();
+      canvas.background(0); 
+      gameWorld.display(true);
+      //canvas.camera(cam.eye.x, cam.eye.y, cam.eye.z, cam.center.x, cam.center.y, cam.center.z, cam.up.x, cam.up.y, cam.up.z);
+    canvas.endDraw();
+    image(canvas, screenCoords.x, screenCoords.y);
   }
   
 }
