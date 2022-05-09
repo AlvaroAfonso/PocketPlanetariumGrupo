@@ -1,17 +1,3 @@
-public static PMatrix generateBillboardMatrix(PMatrix currentMatrix) {
-  float[] elemns = currentMatrix.get(null);
-  PMatrix billboardMatrix = new PMatrix3D();
-  for (int i = 0; i < 11; i++) {
-    if (i % 4 == 3) continue;
-    elemns[i] = 0.0;
-  }
-  for (int i = 0; i < 3; i++) {
-    elemns[i * 4 + i] = 1.0;
-  }
-  billboardMatrix.set(elemns);
-  return billboardMatrix;
-}
-
 
 class HUD { 
   
@@ -25,11 +11,13 @@ class HUD {
   private int lines;
   private int paragraphs;
   
+  /*
+  
   void show() {
     lines = 0;
     paragraphs = 0;
     
-    cameraControl.beginHUD();
+    //cameraControl.beginHUD();
     
     textSize(TEXT_SIZE);
     fill(color(255, 255, 255));
@@ -89,8 +77,8 @@ class HUD {
     text("----", LEFT_MARGIN, TOP_MARGIN + lines++ * LINE_SPACING + paragraphs * PARAGRAPH_SPACING);
     text("Size scale: 1 pixel = " + SIZE_SCALE + "km", LEFT_MARGIN, TOP_MARGIN + lines++ * LINE_SPACING + paragraphs * PARAGRAPH_SPACING);
     
-    cameraControl.endHUD();
+    //cameraControl.endHUD();
     
   }
-  
+  */  
 }

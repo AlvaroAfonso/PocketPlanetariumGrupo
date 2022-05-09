@@ -16,20 +16,19 @@ private float time = 0;
 final int GENERAL_VIEW = 0;
 final int EXPLORE = 1;
 
-int mode = GENERAL_VIEW;
+int mode = EXPLORE;
 boolean showHUD = true;
 
 PImage milkyWay;
-WorldData solarSystemData;
-Spaceship spaceship;
-CameraControl cameraControl;
+World solarSystemData;
+
 HUD hud;
 SoundsManager soundsManager;
 
-PGraphics pg1;
-PGraphics pg2;
-
+Player player1;
+Player player2;
 Viewport player1Viewport;
+Viewport player2Viewport;
 
 void setup() {
   fullScreen(P3D);
@@ -39,11 +38,7 @@ void setup() {
   soundsManager = new SoundsManager(this);
   soundsManager.playBackgroundMusic();
   hud = new HUD();
-  
-  pg1 = createGraphics(width/2, height, P3D);
-  pg2 = createGraphics(width/2, height, P3D);
-  
-  cameraControl = new CameraControl(this, pg1); 
+ 
   
   thread("load");
 }
@@ -51,10 +46,18 @@ void setup() {
 void load() {
   milkyWay = loadImage("./data/images/Milky Way.jpg");
   milkyWay.resize(displayWidth, displayHeight);
-  solarSystemData = new WorldData();
+  solarSystemData = new World();
   //spaceship = new Spaceship();
   
-  player1Viewport = new MatchViewport(new PVector(0, 0), pg1, solarSystemData);
+  player1 = new Player("Player1", new MouseKeyboardControl(this), new PVector(20, 0, 50));
+  player2 = new Player("Player2", new MouseKeyboardControl(this), new PVector(-20, 0, 50));
+  
+  
+  Player[] players = {player1, player2};
+  //Player[] players = {player1};
+  
+  player1Viewport = new MatchViewport(this, width/2, height, new PVector(0, 0), player1, players, solarSystemData);
+  player2Viewport = new MatchViewport(this, width/2, height, new PVector(width/2, 0), player2, players, solarSystemData);
   
   synchronized(this) {
     loading = false;
@@ -92,7 +95,10 @@ void renderScene() {
   
   //pg1.background(milkyWay);  
   //background (0, 0, 0); 
+  player1.update();
+  //player2.update();
   player1Viewport.renderGraphics();
+  player2Viewport.renderGraphics();
   //pg1.noLights();
   //spaceship.display(pg1);
   //pg1.perspective(PI/3.0,(float)width/height,1, 900);

@@ -20,6 +20,20 @@ public Rotation generateQuaternionRotor(PVector rotationAxis, float angle) {
 }
 
 
+public static PMatrix generateBillboardMatrix(PMatrix currentMatrix) {
+  float[] elemns = currentMatrix.get(null);
+  PMatrix billboardMatrix = new PMatrix3D();
+  for (int i = 0; i < 11; i++) {
+    if (i % 4 == 3) continue;
+    elemns[i] = 0.0;
+  }
+  for (int i = 0; i < 3; i++) {
+    elemns[i * 4 + i] = 1.0;
+  }
+  billboardMatrix.set(elemns);
+  return billboardMatrix;
+}
+
 public float innerProduct(PVector a, PVector b) {
     return  acos( a.dot(b) / (a.mag() * b.mag()) );
 }
