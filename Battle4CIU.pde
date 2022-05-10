@@ -96,7 +96,7 @@ void renderScene() {
   //pg1.background(milkyWay);  
   //background (0, 0, 0); 
   player1.update();
-  //player2.update();
+  player2.update();
   player1Viewport.renderGraphics();
   player2Viewport.renderGraphics();
   //pg1.noLights();

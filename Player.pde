@@ -37,6 +37,7 @@ class Player {
   
   private void move() {            
     if (controlScheme.moveForward) {
+      println("Moving " + name);
       acceleration.add(direction.copy().setMag(engineAcceleration));
     }    
     if (controlScheme.moveBackward) {

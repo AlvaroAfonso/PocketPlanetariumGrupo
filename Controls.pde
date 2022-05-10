@@ -142,6 +142,6 @@ public class MouseKeyboardControl extends ControlScheme {
   public void mouseMoved(MouseEvent event) {
     playerFocus.x = event.getX();
     playerFocus.y = event.getY();
-    println(playerFocus.x);
+    //println(playerFocus.x);
   }
 }
