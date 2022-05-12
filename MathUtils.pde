@@ -34,6 +34,11 @@ public static PMatrix generateBillboardMatrix(PMatrix currentMatrix) {
   return billboardMatrix;
 }
 
+public float distanceBetween(PVector pointA, PVector pointB) {
+  return sqrt(pow(pointA.x - pointB.x, 2) + pow(pointA.y - pointB.y, 2) + pow(pointA.z - pointB.z, 2));
+}
+
+
 public float innerProduct(PVector a, PVector b) {
     return  acos( a.dot(b) / (a.mag() * b.mag()) );
 }

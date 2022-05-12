@@ -1,4 +1,4 @@
-
+import java.util.*;
 
 interface Viewport {
   
@@ -25,6 +25,7 @@ class MatchViewport implements Viewport {
     this.players = new ArrayList();
     this.gameWorld = new WorldModel(canvas, world);
     this.cam =  new CustomPeasyCamera(parent, canvas, currentPlayer);
+    //this.cam = new NativeCamera(parent, canvas);
 
     for (Player player : players) {
       this.players.add(new PlayerModel(canvas, player));
@@ -37,16 +38,27 @@ class MatchViewport implements Viewport {
   }
   
   public void renderGraphics() {
-    //cam.update();
+    cam.update();
     canvas.beginDraw();
       canvas.background(0); 
       gameWorld.display(true);
-
+      
+      // We sort the players based on their distance to current player of the viewport from farthest to closest.
+      Collections.sort(players, new Comparator<PlayerModel>() {
+        @Override
+        public int compare(PlayerModel playerModelA, PlayerModel playerModelB) {
+          float distanceA = distanceBetween(cam.getPosition(), playerModelA.player.position);
+          float distanceB = distanceBetween(cam.getPosition(), playerModelB.player.position);
+          if (distanceA > distanceB) return -1;
+          if (distanceA < distanceB) return 1;
+          return 0;
+        }
+      });
+      
       for (PlayerModel player : players) {
         player.display();
       }
-
-      //canvas.camera(cam.eye.x, cam.eye.y, cam.eye.z, cam.center.x, cam.center.y, cam.center.z, cam.up.x, cam.up.y, cam.up.z);
+      //canvas.perspective(PI/3.0,(float)width/height,1, 900);
     canvas.endDraw();
     //cam.update();
     image(canvas, screenCoords.x, screenCoords.y);

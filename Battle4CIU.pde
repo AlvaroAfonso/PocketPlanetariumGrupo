@@ -47,10 +47,9 @@ void load() {
   milkyWay = loadImage("./data/images/Milky Way.jpg");
   milkyWay.resize(displayWidth, displayHeight);
   solarSystemData = new World();
-  //spaceship = new Spaceship();
   
-  player1 = new Player("Player1", new MouseKeyboardControl(this), new PVector(20, 0, 50));
-  player2 = new Player("Player2", new MouseKeyboardControl(this), new PVector(-20, 0, 50));
+  player1 = new Player("Player1", new MouseKeyboardControl(this), new PVector(50, 0, 50));
+  player2 = new Player("Player2", new MouseKeyboardControl(this), new PVector(-50, 0, 50));
   
   
   Player[] players = {player1, player2};
@@ -92,19 +91,16 @@ void showLoadingScreen() {
 void renderScene() {
   //noCursor();  
   solarSystemData.update();
-  
-  //pg1.background(milkyWay);  
-  //background (0, 0, 0); 
   player1.update();
   player2.update();
+  //pg1.background(milkyWay);  
+  //background (0, 0, 0); 
   player1Viewport.renderGraphics();
   player2Viewport.renderGraphics();
   //pg1.noLights();
   //spaceship.display(pg1);
   //pg1.perspective(PI/3.0,(float)width/height,1, 900);
   //pg1.endDraw();
-  
-  
   
   //if(showHUD) hud.show();
 }

@@ -24,6 +24,33 @@ class PlayerFocus {
    }
 }
 
+public class PoseDetectionService {
+  
+  ArrayList<PoseDetectionControl> observers;
+  
+  public void register(PoseDetectionControl control) {
+    observers.add(control);
+    
+    // IDENTIFICACIÓN DEL CONTROL PARA DETERMINAR QUÉ POSE ENVIAR
+    
+  }
+
+}
+
+public class PoseDetectionControl extends ControlScheme {
+  
+  public PoseDetectionControl(PoseDetectionService serv) {
+    serv.register(this); // SUSCRIPCIÓN A SERVICIO PARA RECIBIR POSES DETECTADAS
+  }
+  
+  public void update() {
+    
+    // PROCESAR POSE Y ACTIVAR FLAGS
+    
+  }
+  
+}
+
 
 public class MouseKeyboardControl extends ControlScheme {
   private final int W = 119;
@@ -142,6 +169,7 @@ public class MouseKeyboardControl extends ControlScheme {
   public void mouseMoved(MouseEvent event) {
     playerFocus.x = event.getX();
     playerFocus.y = event.getY();
-    //println(playerFocus.x);
+    
+    //println("[" + playerFocus.x + ", " + playerFocus.y + "]");
   }
 }
