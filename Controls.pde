@@ -1,4 +1,5 @@
 abstract class ControlScheme {
+  // Spaceship movement
   boolean moveForward = false;
   boolean moveLeft = false;
   boolean moveBackward = false;
@@ -7,6 +8,7 @@ abstract class ControlScheme {
   boolean moveDown = false;
   boolean moveStop = false;
   
+  // Planet Orbitation Speedup
   boolean speedUp = false;
   boolean slowDown = false;
   
