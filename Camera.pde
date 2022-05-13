@@ -3,12 +3,12 @@ import processing.core.PApplet;
 
 abstract class Camera {
   
-  private final float CAMERA_MAX_DISTANCE = 550;
-  private final float CAMERA_DEFAULT_DISTANCE = 120;
-  private final float CAMERA_DEFAULT_DISTANCE_TO_SHIP = 200.0;
+  final float CAMERA_MAX_DISTANCE = 550;
+  final float CAMERA_DEFAULT_DISTANCE = 120;
+  final float CAMERA_DEFAULT_DISTANCE_TO_SHIP = 200.0;
   
-  PVector eye;
-  PVector center;
+  PVector position;
+  PVector focus;
   PVector up;
   
   public abstract void update();
@@ -19,34 +19,47 @@ abstract class Camera {
 interface CameraFocusable {
 
   PVector getPosition();
+  PVector getDirection();
+  Rotation getOrientation();
 
 }
 
 
-public class NativeCamera extends Camera {
+public class NativeThirdPersonCamera extends Camera {
   
   private PApplet parent;
   private PGraphics canvas;
+  private Player focusedPlayer;
   
-  public NativeCamera(PApplet parent, PGraphics canvas) {
+  public NativeThirdPersonCamera(PApplet parent, PGraphics canvas, Player focusedPlayer) {
     this.parent = parent;
     this.canvas = canvas;
+    this.focusedPlayer = focusedPlayer;
     parent.registerMethod("draw", this); 
   }
   
   public void draw() {
-    canvas.camera(eye.x, eye.y, eye.z, center.x, center.y, center.z, up.x, up.y, up.z);
+    update();
+    println(position);
+    canvas.camera(
+                  width/2.0 + position.x, height/2.0 + position.y, position.z, 
+                  width/2.0 + focus.x, height/2.0 + focus.y, focus.z, 
+                  up.x, up.y, up.z);
   }
   
-  public void update() {}
+  public void update() {
+    position = new PVector(focusedPlayer.direction.x, focusedPlayer.direction.y, focusedPlayer.direction.z);
+    position.setMag(CAMERA_DEFAULT_DISTANCE);
+    position = PVector.sub(focusedPlayer.position, position);
+    focus = focusedPlayer.position;
+    up = toPVector(focusedPlayer.orientation.applyTo(new Vector3D(0, 1, 0)));
+  }
   
   public PVector getPosition() {
-    return new PVector();
+    return position;
   }
 
 }
-
-
 
 class CustomPeasyCamera extends Camera {
   

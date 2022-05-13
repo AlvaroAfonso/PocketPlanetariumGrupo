@@ -172,11 +172,11 @@ class PlayerModel {
     canvas.pushMatrix();    
       canvas.translate(width/2.0 + player.position.x, height/2.0 + player.position.y, player.position.z);  
       canvas.pushMatrix();
-
+/*
         PMatrix billboardMatrix = generateBillboardMatrix(canvas.getMatrix());
         canvas.resetMatrix();
         canvas.applyMatrix(billboardMatrix);
-
+ */
         //float[] cameraRotations = cameraControl.camera.getRotations();
         //rotateX();
         canvas.pushStyle();

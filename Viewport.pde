@@ -24,8 +24,8 @@ class MatchViewport implements Viewport {
     this.currentPlayer = currentPlayer;
     this.players = new ArrayList();
     this.gameWorld = new WorldModel(canvas, world);
-    this.cam =  new CustomPeasyCamera(parent, canvas, currentPlayer);
-    //this.cam = new NativeCamera(parent, canvas);
+    //this.cam =  new CustomPeasyCamera(parent, canvas, currentPlayer);
+    this.cam = new NativeThirdPersonCamera(parent, canvas, currentPlayer);
 
     for (Player player : players) {
       this.players.add(new PlayerModel(canvas, player));
