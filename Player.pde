@@ -5,6 +5,8 @@ class Player {
   String name;
   ControlScheme controlScheme;
   
+  SoundsManager soundsManager;
+  
   PVector spaceShipColor;
   
   float pitch = 0.0;
@@ -12,6 +14,8 @@ class Player {
   float roll = 0.0;
   
   PVector position;
+  
+  int countFrame = 0;
   
   Rotation orientation = new Rotation(0, 0, 0, 0, false);
   PVector direction = new PVector(0, 0, -1);      // Must be kept normalized
@@ -28,6 +32,7 @@ class Player {
     this.name = name;
     this.controlScheme = controlScheme;
     this.position = startingPosition;
+    soundsManager = new SoundsManager(papplet);
   }
   
   public void update() {
@@ -35,7 +40,20 @@ class Player {
     move();
   }
   
-  private void move() {            
+  private void move() {      
+    
+    //Space engine control
+    if(controlScheme.moveForward || controlScheme.moveBackward || controlScheme.moveLeft || controlScheme.moveRight || controlScheme.moveUp || controlScheme.moveDown || controlScheme.moveStop){
+      if(countFrame == 0){
+      soundsManager.startSpaceshipEngine();
+      }
+      countFrame++;
+      if(countFrame > 5) countFrame = 0;       
+    }else{
+      soundsManager.stopSpaceshipEngine();
+      countFrame = 0;
+    }
+    
     if (controlScheme.moveForward) {
       println("Moving " + name);
       acceleration.add(direction.copy().setMag(engineAcceleration));

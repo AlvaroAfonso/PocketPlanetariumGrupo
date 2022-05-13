@@ -5,13 +5,19 @@ class SoundsManager {
   
   private SoundFile ambientMusic;
   private SoundFile spaceshipTheme;
-  private SoundFile spaceshipEngine;
+  //private SoundFile spaceshipEngine;
+  
+  private SinOsc spaceshipEngine;
+  private boolean selectFreq = true;
+  private float freqHighNave = 500;
+  private float freqLowNave = 450;
   
   SoundsManager(PApplet parent) {
     ambientMusic = new SoundFile(parent, "./data/music/mrthenoronha - ambient.wav");
     spaceshipTheme = new SoundFile(parent, "./data/music/legend1060 - spaceship theme.wav");
-    spaceshipEngine = new SoundFile(parent, "./data/music/loumarchais - spaceship movement.wav");
+    //spaceshipEngine = new SoundFile(parent, "./data/music/loumarchais - spaceship movement.wav");
     ambientMusic.amp(0.5);
+    spaceshipEngine = new SinOsc(papplet);
     spaceshipTheme.amp(0.5);
     spaceshipEngine.amp(0.5);
   }
@@ -36,11 +42,19 @@ class SoundsManager {
   }
   
   void startSpaceshipEngine() {
-    if (!spaceshipEngine.isPlaying()) spaceshipEngine.loop();
+    if(selectFreq){
+    //print(freqHighNave);
+      spaceshipEngine.freq(freqHighNave);
+    }else{
+      //print(freqLowNave);
+      spaceshipEngine.freq(freqLowNave);
+    }
+    selectFreq = !selectFreq;
+    spaceshipEngine.play();
   }
   
   void stopSpaceshipEngine() {
-    if (spaceshipEngine.isPlaying()) spaceshipEngine.stop();
+    spaceshipEngine.stop();
   }
   
 }

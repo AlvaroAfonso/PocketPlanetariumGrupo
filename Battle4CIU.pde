@@ -13,6 +13,8 @@ public float timeSinceLastStep; // seconds
 private float prevTime = 0;
 private float time = 0;
 
+PApplet papplet = this;
+
 final int GENERAL_VIEW = 0;
 final int EXPLORE = 1;
 
