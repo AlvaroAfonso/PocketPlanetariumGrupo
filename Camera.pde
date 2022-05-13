@@ -11,7 +11,6 @@ abstract class Camera {
   PVector focus;
   PVector up;
   
-  public abstract void update();
   public abstract PVector getPosition();
 
 }
@@ -40,11 +39,11 @@ public class NativeThirdPersonCamera extends Camera {
   
   public void draw() {
     update();
-    println(position);
     canvas.camera(
                   width/2.0 + position.x, height/2.0 + position.y, position.z, 
                   width/2.0 + focus.x, height/2.0 + focus.y, focus.z, 
                   up.x, up.y, up.z);
+    canvas.perspective(PI/3.0, (float)canvas.width/canvas.height, 1, 100000);
   }
   
   public void update() {
@@ -79,6 +78,7 @@ class CustomPeasyCamera extends Camera {
     //camera.setResetOnDoubleClick(false);
     //camera.setMinimumDistance(1);
     camera.setMaximumDistance(super.CAMERA_MAX_DISTANCE);
+    parent.registerMethod("draw", this); 
     //update();
   }
   
@@ -87,7 +87,7 @@ class CustomPeasyCamera extends Camera {
     return new PVector(cameraCoordinates[0] - width/2.0, cameraCoordinates[1] - height/2.0, cameraCoordinates[2]);
   }
   
-  void update() {
+  public void draw() {
     if (mode != EXPLORE) return;   
     CameraState update = new CameraState(player.orientation, new Vector3D(width/2.0 + player.position.x, height/2.0 + player.position.y, player.position.z), super.CAMERA_DEFAULT_DISTANCE_TO_SHIP);
     camera.setState(update, 0);

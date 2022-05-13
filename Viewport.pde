@@ -38,12 +38,11 @@ class MatchViewport implements Viewport {
   }
   
   public void renderGraphics() {
-    cam.update();
     canvas.beginDraw();
       canvas.background(0); 
       gameWorld.display(true);
       
-      // We sort the players based on their distance to current player of the viewport from farthest to closest.
+      // We sort the players based on their distance to current player from farthest to closest.
       Collections.sort(players, new Comparator<PlayerModel>() {
         @Override
         public int compare(PlayerModel playerModelA, PlayerModel playerModelB) {
@@ -60,7 +59,6 @@ class MatchViewport implements Viewport {
       }
       //canvas.perspective(PI/3.0,(float)width/height,1, 900);
     canvas.endDraw();
-    //cam.update();
     image(canvas, screenCoords.x, screenCoords.y);
   }
   

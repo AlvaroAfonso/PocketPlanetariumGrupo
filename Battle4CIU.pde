@@ -58,7 +58,7 @@ void load() {
   //Player[] players = {player1};
   
   player1Viewport = new MatchViewport(this, width/2, height, new PVector(0, 0), player1, players, solarSystemData);
-  //player2Viewport = new MatchViewport(this, width/2, height, new PVector(width/2, 0), player2, players, solarSystemData);
+  player2Viewport = new MatchViewport(this, width/2, height, new PVector(width/2, 0), player2, players, solarSystemData);
   
   synchronized(this) {
     loading = false;
@@ -98,7 +98,7 @@ void renderScene() {
   //pg1.background(milkyWay);  
   //background (0, 0, 0); 
   player1Viewport.renderGraphics();
-  //player2Viewport.renderGraphics();
+  player2Viewport.renderGraphics();
   //pg1.noLights();
   //spaceship.display(pg1);
   //pg1.perspective(PI/3.0,(float)width/height,1, 900);
