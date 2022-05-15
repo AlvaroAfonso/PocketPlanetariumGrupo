@@ -57,7 +57,7 @@ void load() {
     player1 = new Player("Player1", new MouseKeyboardControl(this,true), new PVector(20, 0, 50));
     player2 = new Player("Player2", new MouseKeyboardControl(this,false), new PVector(-20, 0, 50));
   } else if(nPosePlayers==1){
-    player1 = new Player("Player1", new PoseControl(this, 1), new PVector(20, 0, 50));
+    player1 = new Player("Player1", new PoseControl(this, 0), new PVector(20, 0, 50));
     player2 = new Player("Player2", new MouseKeyboardControl(this,false), new PVector(-20, 0, 50));
   } else {
     player1 = new Player("Player1", new PoseControl(this, 1), new PVector(20, 0, 50));

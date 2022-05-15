@@ -62,8 +62,8 @@ public class PoseControl extends ControlScheme {
   
   public void pre(){
     if (poses.length > 0) {
-      detectionLeftArm(poses[this.ID],"leftWrist","leftElbow");
-      detectionRightArm(poses[this.ID],"rightWrist","rightElbow");
+      detectionLeftArm(poses[this.ID],"leftWrist","leftElbow"); //<>//
+      detectionRightArm(poses[this.ID],"rightWrist","rightElbow"); //<>//
     }
   }
   
@@ -182,6 +182,32 @@ public class PoseControl extends ControlScheme {
       this.poseX = width/2 + p0.x + sensitivityOffset - p1.x - 50;
     } else{
       this.poseX = width/2;
+    }
+  }
+  
+  //listener method
+  public void parseData(String data){
+    XML xml = parseXML(data);
+    int nPosesAux = xml.getInt("nPoses");
+    if(nPosesAux >= nPoses){
+      poses = new Pose[nPoses];
+      XML[] xmlposes = xml.getChildren("pose");
+      for (int i = 0; i < xmlposes.length; i++){
+        XML[] xmlkeypoints = xmlposes[i].getChildren("keypoint");
+      
+        poses[i] = new Pose();
+        poses[i].score = xmlposes[i].getFloat("score");
+      
+        for (int j = 0; j < xmlkeypoints.length; j++){
+          Keypoint kpt = new Keypoint();
+       
+          kpt.position.x = xmlkeypoints[j].getFloat("x");
+          kpt.position.y = xmlkeypoints[j].getFloat("y");
+          kpt.score = xmlkeypoints[j].getFloat("score");
+        
+          poses[i].keypoints.put(xmlkeypoints[j].getString("part"), kpt);
+        }
+      }
     }
   }
 }
@@ -383,32 +409,5 @@ public class MouseKeyboardControl extends ControlScheme {
     playerFocus.x = event.getX();
     playerFocus.y = event.getY();
     //println(playerFocus.x);
-  }
-}
-
-
-//listener method
-public void parseData(String data){
-  XML xml = parseXML(data);
-  int nPosesAux = xml.getInt("nPoses");
-  if(nPosesAux >= nPoses){
-    poses = new Pose[nPoses];
-    XML[] xmlposes = xml.getChildren("pose");
-    for (int i = 0; i < xmlposes.length; i++){
-      XML[] xmlkeypoints = xmlposes[i].getChildren("keypoint");
-    
-      poses[i] = new Pose();
-      poses[i].score = xmlposes[i].getFloat("score");
-    
-      for (int j = 0; j < xmlkeypoints.length; j++){
-        Keypoint kpt = new Keypoint();
-     
-        kpt.position.x = xmlkeypoints[j].getFloat("x");
-        kpt.position.y = xmlkeypoints[j].getFloat("y");
-        kpt.score = xmlkeypoints[j].getFloat("score");
-      
-        poses[i].keypoints.put(xmlkeypoints[j].getString("part"), kpt);
-      }
-    }
   }
 }
