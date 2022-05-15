@@ -1,8 +1,3 @@
-// necessary global variables for the event listener
-Pose[] poses = new Pose[0];
-int nPoses = 0;
-
-
 
 abstract class ControlScheme {
   
@@ -38,32 +33,32 @@ public class PoseControl extends ControlScheme {
   private oscReceiver osc;
   private int ID;
   private int[] detectionBuffer;
-  private float poseX;
-  private float poseY;
   
+  Pose[] poses;
+  int nPoses = 0;
   
   public PoseControl(PApplet parent, int playerID){
     this.ID = playerID;
     this.detectionBuffer = new int[4];
-    this.poseX=width/2;
-    this.poseY=height/2;
     for(int i=0; i<4; i++){
       this.detectionBuffer[i]=0; //Move forward, backwards, left, right
     }
     this.osc = new oscReceiver();
     this.osc.oscP5.plug(this,"parseData","/poses/xml"); //listener activation
+    poses = new Pose[0];
     nPoses++;
-    sensitivity = 1;
-    sensitivityOffset = 20;
-    playerFocus=new PlayerFocus(this.poseX,this.poseY);
+    sensitivity = 5;
+    sensitivityOffset = 100;
+    playerFocus=new PlayerFocus(width/2,height/2);
     parent.registerMethod("pre", this);
   }
   
   
   public void pre(){
     if (poses.length > 0) {
-      detectionLeftArm(poses[this.ID],"leftWrist","leftElbow"); //<>//
-      detectionRightArm(poses[this.ID],"rightWrist","rightElbow"); //<>//
+      println("Hey");
+      //detectionLeftArm(poses[this.ID],"leftWrist","leftElbow"); //<>//
+      detectionRightArm(poses[this.ID],"rightWrist","rightShoulder"); //<>//
     }
   }
   
@@ -81,11 +76,11 @@ public class PoseControl extends ControlScheme {
     if (!keypoints.containsKey(part1)){
       return;
     }
-    PVector p0 = keypoints.get(part0).position;
-    PVector p1 = keypoints.get(part1).position;
+    PVector wristCoords = keypoints.get(part0).position;
+    PVector elbowCoords = keypoints.get(part1).position;
     
     
-    if(p0.y - p1.y < sensitivityOffset-50){
+    if(wristCoords.y - elbowCoords.y < sensitivityOffset){
       if(this.detectionBuffer[0]>4){
         moveForward = true;
       }else{
@@ -99,7 +94,7 @@ public class PoseControl extends ControlScheme {
       }
     }
     
-    if(p0.y - p1.y > 50-sensitivityOffset){
+    if(wristCoords.y - elbowCoords.y > 50-sensitivityOffset){
       if(this.detectionBuffer[1]>4){
         moveBackward = true;
       }else{
@@ -113,7 +108,7 @@ public class PoseControl extends ControlScheme {
       }
     }
     
-    if(p0.x - p1.x < sensitivityOffset-50){
+    if(wristCoords.x - elbowCoords.x < sensitivityOffset-50){
       if(this.detectionBuffer[2]>4){
         moveLeft = true;
       }else{
@@ -127,7 +122,7 @@ public class PoseControl extends ControlScheme {
       }
     }
     
-    if(p0.x - p1.x > 50-sensitivityOffset){
+    if(wristCoords.x - elbowCoords.x > 50-sensitivityOffset){
       if(this.detectionBuffer[3]>4){
         moveRight = true;
       }else{
@@ -156,37 +151,30 @@ public class PoseControl extends ControlScheme {
     if (!keypoints.containsKey(part1)){
       return;
     }
-    PVector p0 = keypoints.get(part0).position;
-    PVector p1 = keypoints.get(part1).position;
+    PVector wristCoords = keypoints.get(part0).position;
+    PVector elbowCoords = keypoints.get(part1).position;
     
     
-    if(p0.y - p1.y < sensitivityOffset-50){
-      this.poseY = height/2 - p0.y - sensitivityOffset + p1.y + 50;
+    if(wristCoords.y - elbowCoords.y < -1.5*sensitivityOffset){
+      playerFocus.y = height/2 - sensitivityOffset - 50;
+    } else if(wristCoords.y - elbowCoords.y > 1.5*sensitivityOffset){
+      playerFocus.y = height/2 + sensitivityOffset + 50;
     } else{
-      this.poseY = height/2;
+      playerFocus.y = height/2;
     }
     
-    if(p0.y - p1.y > 50-sensitivityOffset){
-      this.poseY = height/2 + p0.y + sensitivityOffset - p1.y - 50;
+    if(wristCoords.x - elbowCoords.x < -sensitivityOffset){
+      playerFocus.x = width/2 + sensitivityOffset + 50;
+    } else if(wristCoords.x - elbowCoords.x > sensitivityOffset){
+      playerFocus.x = width/2 - sensitivityOffset - 50;
     } else{
-      this.poseY = height/2;
-    }
-    
-    if(p0.x - p1.x < sensitivityOffset-50){
-      this.poseX = width/2 - p0.x - sensitivityOffset + p1.x + 50;
-    } else{
-      this.poseX = width/2;
-    }
-    
-    if(p0.x - p1.x < 50-sensitivityOffset){
-      this.poseX = width/2 + p0.x + sensitivityOffset - p1.x - 50;
-    } else{
-      this.poseX = width/2;
+      playerFocus.x = width/2;
     }
   }
   
   //listener method
   public void parseData(String data){
+    println("Hey2");
     XML xml = parseXML(data);
     int nPosesAux = xml.getInt("nPoses");
     if(nPosesAux >= nPoses){
@@ -237,8 +225,6 @@ public class MouseKeyboardControl extends ControlScheme {
   
   
   private boolean mainScheme;
-  private float keyX;
-  private float keyY;
   
   public MouseKeyboardControl(PApplet parent, boolean scheme) {
     this.mainScheme = scheme;
@@ -248,14 +234,10 @@ public class MouseKeyboardControl extends ControlScheme {
       parent.registerMethod("mouseEvent", this);
       sensitivity = 1.75; // radians
       sensitivityOffset = 150;
-      this.keyX=0;
-      this.keyY=0;
     } else{                                            // alt scheme uses I, J, K, L, U, O, P, numpad 2, 4, 6, 8
-      this.keyX=width/2;
-      this.keyY=height/2;
       sensitivity=2;
       sensitivityOffset=0;
-      playerFocus=new PlayerFocus(this.keyX,this.keyY);
+      playerFocus=new PlayerFocus(width/2, height/2);
     }
   }
   
@@ -276,34 +258,34 @@ public class MouseKeyboardControl extends ControlScheme {
       if (keyCode == eight){
         switch (event.getAction()){
           case KeyEvent.PRESS:
-            keyY+=5;
+            playerFocus.y += 5;
             break;
           case KeyEvent.RELEASE:
-            keyY-=5;
+            playerFocus.y -= 5;
         }
       } else if (keyCode == four){
         switch (event.getAction()){
           case KeyEvent.PRESS:
-            keyX-=5;
+            playerFocus.x -= 5;
             break;
           case KeyEvent.RELEASE:
-            keyX+=5;
+            playerFocus.x += 5;
         }
       } else if (keyCode == two){
         switch (event.getAction()){
           case KeyEvent.PRESS:
-            keyY-=5;
+            playerFocus.y -= 5;
             break;
           case KeyEvent.RELEASE:
-            keyY+=5;
+            playerFocus.y += 5;
         }
       } else if (keyCode == six){
         switch (event.getAction()){
           case KeyEvent.PRESS:
-            keyX+=5;
+            playerFocus.x += 5;
             break;
           case KeyEvent.RELEASE:
-            keyX-=5;
+            playerFocus.x -= 5;
         }
       } else if (keyCode != W && keyCode != A && keyCode != R && keyCode != S && keyCode != D && keyCode != X && keyCode != SPACE){
         switch (event.getAction()) {
