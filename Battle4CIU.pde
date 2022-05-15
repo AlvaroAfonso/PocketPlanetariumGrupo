@@ -13,11 +13,10 @@ public float timeSinceLastStep; // seconds
 private float prevTime = 0;
 private float time = 0;
 
-PApplet papplet = this;
-
 final int GENERAL_VIEW = 0;
 final int EXPLORE = 1;
 
+int nPosePlayers;
 int mode = EXPLORE;
 boolean showHUD = true;
 
@@ -36,6 +35,7 @@ void setup() {
   fullScreen(P3D);
   //size(1800 ,1500 ,P3D) ;
   noStroke();
+  nPosePlayers = 2;
   loading = true;
   soundsManager = new SoundsManager(this);
   soundsManager.playBackgroundMusic();
@@ -49,9 +49,18 @@ void load() {
   milkyWay = loadImage("./data/images/Milky Way.jpg");
   milkyWay.resize(displayWidth, displayHeight);
   solarSystemData = new World();
+  //spaceship = new Spaceship();
   
-  player1 = new Player("Player1", new MouseKeyboardControl(this), new PVector(50, 0, 50));
-  player2 = new Player("Player2", new MouseKeyboardControl(this), new PVector(-50, 0, 50));
+  if(nPosePlayers==0){
+    player1 = new Player("Player1", new MouseKeyboardControl(this,true), new PVector(20, 0, 50));
+    player2 = new Player("Player2", new MouseKeyboardControl(this,false), new PVector(-20, 0, 50));
+  } else if(nPosePlayers==1){
+    player1 = new Player("Player1", new PoseControl(this, 1), new PVector(20, 0, 50));
+    player2 = new Player("Player2", new MouseKeyboardControl(this,true), new PVector(-20, 0, 50));
+  } else {
+    player1 = new Player("Player1", new PoseControl(this, 1), new PVector(20, 0, 50));
+    player2 = new Player("Player2", new PoseControl(this, 2), new PVector(-20, 0, 50));
+  }
   
   
   Player[] players = {player1, player2};
@@ -93,16 +102,25 @@ void showLoadingScreen() {
 void renderScene() {
   //noCursor();  
   solarSystemData.update();
-  player1.update();
-  player2.update();
+  
   //pg1.background(milkyWay);  
   //background (0, 0, 0); 
+  if (nPosePlayers > 0){
+    player1.controlScheme.detection();
+    if (nPosePlayers > 1){
+      player2.controlScheme.detection();
+    }
+  }
+  player1.update();
+  player2.update();
   player1Viewport.renderGraphics();
   player2Viewport.renderGraphics();
   //pg1.noLights();
   //spaceship.display(pg1);
   //pg1.perspective(PI/3.0,(float)width/height,1, 900);
   //pg1.endDraw();
+  
+  
   
   //if(showHUD) hud.show();
 }
