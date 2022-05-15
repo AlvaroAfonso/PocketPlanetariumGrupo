@@ -26,6 +26,8 @@ World solarSystemData;
 HUD hud;
 SoundsManager soundsManager;
 
+PApplet papplet = this;
+
 Player player1;
 Player player2;
 Viewport player1Viewport;
@@ -35,7 +37,7 @@ void setup() {
   fullScreen(P3D);
   //size(1800 ,1500 ,P3D) ;
   noStroke();
-  nPosePlayers = 2;
+  nPosePlayers = 1;
   loading = true;
   soundsManager = new SoundsManager(this);
   soundsManager.playBackgroundMusic();
@@ -105,12 +107,17 @@ void renderScene() {
   
   //pg1.background(milkyWay);  
   //background (0, 0, 0); 
+  
+  /*
   if (nPosePlayers > 0){
     player1.controlScheme.detection();
     if (nPosePlayers > 1){
       player2.controlScheme.detection();
     }
   }
+  */ 
+  
+  
   player1.update();
   player2.update();
   player1Viewport.renderGraphics();

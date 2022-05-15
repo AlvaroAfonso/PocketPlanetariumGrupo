@@ -50,16 +50,17 @@ public class PoseControl extends ControlScheme {
     for(int i=0; i<4; i++){
       this.detectionBuffer[i]=0; //Move forward, backwards, left, right
     }
-    this.osc = new oscReceiver;
+    this.osc = new oscReceiver();
     this.osc.oscP5.plug(this,"parseData","/poses/xml"); //listener activation
     nPoses++;
     sensitivity = 1;
     sensitivityOffset = 20;
     playerFocus=new PlayerFocus(this.poseX,this.poseY);
+    parent.registerMethod("pre", this);
   }
   
   
-  void detection(){
+  public void pre(){
     detectionLeftArm(poses[this.ID],"leftWrist","leftElbow");
     detectionRightArm(poses[this.ID],"rightWrist","rightElbow");
   }
@@ -201,10 +202,10 @@ public class MouseKeyboardControl extends ControlScheme {
   private final int U = 117;
   private final int O = 111;
   private final int P = 112;
-  private final int 8 = 56;
-  private final int 4 = 52;
-  private final int 2 = 50;
-  private final int 6 = 54;
+  private final int eight = 56;
+  private final int four = 52;
+  private final int two = 50;
+  private final int six = 54;
   
   
   private boolean mainScheme;
@@ -244,34 +245,38 @@ public class MouseKeyboardControl extends ControlScheme {
         }
       }
     } else{  // if using alt scheme first check and handle camera movement
-      if (keyCode == 8){
+      if (keyCode == eight){
         switch (event.getAction()){
-          case keyEvent.PRESS:
+          case KeyEvent.PRESS:
             keyY+=5;
             break;
-          case keyEvent.RELEASE:
+          case KeyEvent.RELEASE:
             keyY-=5;
-      } else if (keyCode == 4){
+        }
+      } else if (keyCode == four){
         switch (event.getAction()){
-          case keyEvent.PRESS:
+          case KeyEvent.PRESS:
             keyX-=5;
             break;
-          case keyEvent.RELEASE:
+          case KeyEvent.RELEASE:
             keyX+=5;
-      } else if (keyCode == 2){
+        }
+      } else if (keyCode == two){
         switch (event.getAction()){
-          case keyEvent.PRESS:
+          case KeyEvent.PRESS:
             keyY-=5;
             break;
-          case keyEvent.RELEASE:
+          case KeyEvent.RELEASE:
             keyY+=5;
-      } else if (keyCode == 6){
+        }
+      } else if (keyCode == six){
         switch (event.getAction()){
-          case keyEvent.PRESS:
+          case KeyEvent.PRESS:
             keyX+=5;
             break;
-          case keyEvent.RELEASE:
+          case KeyEvent.RELEASE:
             keyX-=5;
+        }
       } else if (keyCode != W && keyCode != A && keyCode != R && keyCode != S && keyCode != D && keyCode != X && keyCode != SPACE){
         switch (event.getAction()) {
           case KeyEvent.PRESS:     
@@ -404,5 +409,4 @@ public void parseData(String data){
       }
     }
   }
-
 }

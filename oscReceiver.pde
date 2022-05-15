@@ -36,5 +36,3 @@ public class oscReceiver{
     this.oscP5 = new OscP5(this, myProperties);
   }
 }
-
-}
