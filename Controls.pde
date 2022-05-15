@@ -61,8 +61,10 @@ public class PoseControl extends ControlScheme {
   
   
   public void pre(){
-    detectionLeftArm(poses[this.ID],"leftWrist","leftElbow");
-    detectionRightArm(poses[this.ID],"rightWrist","rightElbow");
+    if (poses.length > 0) {
+      detectionLeftArm(poses[this.ID],"leftWrist","leftElbow");
+      detectionRightArm(poses[this.ID],"rightWrist","rightElbow");
+    }
   }
   
   
