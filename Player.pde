@@ -55,7 +55,6 @@ class Player {
     }
     
     if (controlScheme.moveForward) {
-      println("Moving " + name);
       acceleration.add(direction.copy().setMag(engineAcceleration));
     }    
     if (controlScheme.moveBackward) {
@@ -104,22 +103,22 @@ class Player {
   
   void updateOrientation() {  
     //if (mode != EXPLORE) return;
-    if (controlScheme.playerFocus.y < height/2.0 - controlScheme.sensitivityOffset) {
+    if (controlScheme.playerFocus.y < height/2.0 - controlScheme.cameraSensitivityOffset) {
       
-      pitch -= radians(((height/2.0) - (controlScheme.playerFocus.y + 1)) / (height/2.0) * controlScheme.sensitivity);
+      pitch -= radians(((height/2.0) - (controlScheme.playerFocus.y + 1)) / (height/2.0) * controlScheme.cameraSensitivity);
       
-    } else if (controlScheme.playerFocus.y > height/2.0 + controlScheme.sensitivityOffset) {
+    } else if (controlScheme.playerFocus.y > height/2.0 + controlScheme.cameraSensitivityOffset) {
       
-      pitch += radians((controlScheme.playerFocus.y - height/2.0) / (height/2.0) * controlScheme.sensitivity);
+      pitch += radians((controlScheme.playerFocus.y - height/2.0) / (height/2.0) * controlScheme.cameraSensitivity);
       
     }
-    if (controlScheme.playerFocus.x < width/2.0 - controlScheme.sensitivityOffset) {
+    if (controlScheme.playerFocus.x < width/2.0 - controlScheme.cameraSensitivityOffset) {
       
-      yaw += radians(((width/2.0) - (controlScheme.playerFocus.x + 1)) / (width/2.0) * controlScheme.sensitivity);
+      yaw += radians(((width/2.0) - (controlScheme.playerFocus.x + 1)) / (width/2.0) * controlScheme.cameraSensitivity);
       
-    } else if (controlScheme.playerFocus.x > width/2.0 + controlScheme.sensitivityOffset) {
+    } else if (controlScheme.playerFocus.x > width/2.0 + controlScheme.cameraSensitivityOffset) {
       
-      yaw -= radians((controlScheme.playerFocus.x - width/2.0) / (width/2.0) * controlScheme.sensitivity);
+      yaw -= radians((controlScheme.playerFocus.x - width/2.0) / (width/2.0) * controlScheme.cameraSensitivity);
       
     }
     
