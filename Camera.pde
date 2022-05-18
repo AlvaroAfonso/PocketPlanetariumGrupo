@@ -4,8 +4,7 @@ import processing.core.PApplet;
 abstract class Camera {
   
   final float CAMERA_MAX_DISTANCE = 550;
-  final float CAMERA_DEFAULT_DISTANCE = 120;
-  final float CAMERA_DEFAULT_DISTANCE_TO_SHIP = 200.0;
+  float CAMERA_DEFAULT_DISTANCE = 7;
   
   PVector position;
   PVector focus;
@@ -29,6 +28,7 @@ public class NativeThirdPersonCamera extends Camera {
   private PApplet parent;
   private PGraphics canvas;
   private Player focusedPlayer;
+
   
   public NativeThirdPersonCamera(PApplet parent, PGraphics canvas, Player focusedPlayer) {
     this.parent = parent;
@@ -60,6 +60,8 @@ public class NativeThirdPersonCamera extends Camera {
 
 }
 
+
+/*
 class CustomPeasyCamera extends Camera {
   
   private PApplet parent;

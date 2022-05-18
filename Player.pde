@@ -24,7 +24,7 @@ class Player {
   
   PVector speed = new PVector(0, 0, 0);
   PVector acceleration = new PVector(0, 0, 0);
-  float maxSpeed = 500 * 300000; // X times the speed of light
+  float maxSpeed = 1000 * 300000; // X times the speed of light
   float engineAcceleration = 0.0025;
 
   
@@ -171,18 +171,18 @@ class PlayerModel {
     canvas.pushMatrix();    
       canvas.translate(width/2.0 + player.position.x, height/2.0 + player.position.y, player.position.z);  
       canvas.pushMatrix();
-/*
+
         PMatrix billboardMatrix = generateBillboardMatrix(canvas.getMatrix());
         canvas.resetMatrix();
         canvas.applyMatrix(billboardMatrix);
- */
+        
         //float[] cameraRotations = cameraControl.camera.getRotations();
         //rotateX();
         canvas.pushStyle();
           canvas.noLights();
           canvas.imageMode(CENTER);
-          //canvas.scale(0.0003);
-          canvas.scale(0.05);
+          canvas.scale(0.003);
+          //Dcanvas.scale(0.05);
           canvas.image(sprite, 0, 0);
         canvas.popStyle();
       canvas.popMatrix();
