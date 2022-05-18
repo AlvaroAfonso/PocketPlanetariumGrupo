@@ -223,8 +223,8 @@ class WorldModel {
       canvas.pointLight(255, 255, 255, 0, 0, 0);
       displayAstronomicalBody(worldData.sun);
       if (displayData) {
-        //canvas.noLights();
-        //displayAstronomicalBodyData(worldData.sun);
+        canvas.noLights();
+        displayAstronomicalBodyData(worldData.sun);
       }
     canvas.popMatrix();
   }
@@ -322,7 +322,7 @@ class WorldModel {
         canvas.translate(-min(body.radius, 0.75), -1.2*body.radius);
         canvas.fill(color(255, 255, 255));
         //textSize(radius > 200 ? 900 : 400);
-        canvas.textSize(2 * min(body.radius, 0.7));
+        //canvas.textSize(2 * min(body.radius, 0.7));
         canvas.text(body.name, 0, 0);
       canvas.popMatrix();
 

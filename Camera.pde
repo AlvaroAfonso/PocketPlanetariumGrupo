@@ -52,6 +52,7 @@ public class NativeThirdPersonCamera extends Camera {
     position = PVector.sub(focusedPlayer.position, position);
     focus = focusedPlayer.position;
     up = toPVector(focusedPlayer.orientation.applyTo(new Vector3D(0, 1, 0)));
+    //up = focusedPlayer.verticalAxis;
   }
   
   public PVector getPosition() {

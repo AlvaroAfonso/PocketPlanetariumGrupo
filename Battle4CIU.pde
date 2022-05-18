@@ -39,7 +39,7 @@ void setup() {
   fullScreen(P3D);
   //size(1800 ,1500 ,P3D) ;
   noStroke();
-  nPosePlayers = 0;
+  nPosePlayers = 1;
   loading = true;
   soundsManager = new SoundsManager(this);
   soundsManager.playBackgroundMusic();
@@ -61,7 +61,7 @@ void load() {
     player2 = new Player("Player2", new MouseKeyboardControl(this, new AltKeyboardMap(), false), new PVector(-20, 0, 50));
   } else if(nPosePlayers==1){
     player1 = new Player("Player1", new PoseControl(poseDetectionService), new PVector(20, 0, 50));
-    player2 = new Player("Player2", new MouseKeyboardControl(this, new MainKeyboardMap(), false), new PVector(-20, 0, 50));
+    player2 = new Player("Player2", new MouseKeyboardControl(this, new MainKeyboardMap(), true), new PVector(-20, 0, 50));
   } else {
     player1 = new Player("Player1", new PoseControl(poseDetectionService), new PVector(20, 0, 50));
     player2 = new Player("Player2", new PoseControl(poseDetectionService), new PVector(-20, 0, 50));

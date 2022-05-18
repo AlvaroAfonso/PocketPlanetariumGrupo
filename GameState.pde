@@ -1,33 +1,25 @@
 
-interface GameState {
-  public void run();
-}
-
-class MenuState implements GameState {
+abstract class  Scene {
   
-  Viewport[] viewports;
+  private Viewport[] viewports;
 
-  public void run() {
+  public void display() {
     for (Viewport view : viewports) {
       view.renderGraphics();      
     }
   }
+}
 
+class MenuState extends Scene {
+  
 }
 
 
-class MatchConfigState implements GameState {
+class MatchConfigState extends Scene {
 
-  public void run() {
-  
-  }
 
 }
 
-class MatchState implements GameState {
-
-  public void run() {
-  
-  }
+class MatchState extends Scene {
 
 }

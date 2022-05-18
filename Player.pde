@@ -126,6 +126,9 @@ class Player {
     if (yaw >= TWO_PI || yaw <= TWO_PI) yaw = 0 + yaw % TWO_PI;
     
     Rotation verticalRotation = generateQuaternionRotor(horizontalAxis, -pitch);
+    
+    //verticalAxis = toPVector(verticalRotation.applyTo(Vector3D.minusJ));
+    
     Rotation horizontalRotation = generateQuaternionRotor(verticalAxis, yaw);
     
     orientation = horizontalRotation.applyTo(verticalRotation);
