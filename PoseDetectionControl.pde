@@ -4,88 +4,41 @@ import oscP5.*;
 
 public class PoseControl extends ControlScheme {
 
-  private int[] detectionBuffer;
+  private CommandLatencyGenerator latencyGen;
   
   public PoseControl(PoseDetectionService poseDetectionService){
     poseDetectionService.register(this);
-    this.detectionBuffer = new int[4];
-    for(int i=0; i<4; i++){
-      this.detectionBuffer[i]=0; //Move forward, backwards, left, right
-    }
-    cameraSensitivity = 5;
-    cameraSensitivityOffset = 100;
+    Command[] commands = {Command.MOVE_FORWARD, Command.MOVE_BACKWARD, Command.MOVE_LEFT, Command.MOVE_RIGHT};
+    latencyGen = new CommandLatencyGenerator(commands, 4);
+    cameraSensitivity = 3.5;
+    cameraSensitivityOffset = 80;
     playerFocus = new PlayerFocus(width/2,height/2);
   }
-  
   
   public void update(Pose newPose) {
     parseMovementControls(newPose,"leftWrist","leftShoulder");
     parseCameraControls(newPose,"rightWrist","rightShoulder");
   }
   
-  
   private void parseMovementControls(Pose pose, String controlPart, String anchorPart){
     PVector controlCoords = pose.getPartCoords(controlPart);
     PVector anchorCoords = pose.getPartCoords(anchorPart);
     
     if (controlCoords == null || anchorCoords == null) return;
+        
+    if(controlCoords.y - anchorCoords.y < -cameraSensitivityOffset) moveForward = latencyGen.delayedFlagValue(Command.MOVE_FORWARD, true);
+    else  moveForward = latencyGen.delayedFlagValue(Command.MOVE_FORWARD, false);
     
+    if (controlCoords.y - anchorCoords.y > cameraSensitivityOffset) moveBackward = latencyGen.delayedFlagValue(Command.MOVE_BACKWARD, true);
+    else moveBackward = latencyGen.delayedFlagValue(Command.MOVE_BACKWARD, false);
     
-    if(controlCoords.y - anchorCoords.y < -cameraSensitivityOffset){
-      if(this.detectionBuffer[0]>4){
-        moveForward = true;
-      }else{
-        this.detectionBuffer[0]++;
-      }
-    } else{
-      if(this.detectionBuffer[0]>0){
-        this.detectionBuffer[0]--;
-      }else{
-        moveForward=false;
-      }
-    }
+    if (controlCoords.x - anchorCoords.x < -cameraSensitivityOffset) moveLeft = latencyGen.delayedFlagValue(Command.MOVE_LEFT, true);
+    else moveLeft = latencyGen.delayedFlagValue(Command.MOVE_LEFT, false);
     
-    if(controlCoords.y - anchorCoords.y > cameraSensitivityOffset){
-      if(this.detectionBuffer[1]>4){
-        moveBackward = true;
-      }else{
-        this.detectionBuffer[1]++;
-      }
-    } else{
-      if(this.detectionBuffer[1]>0){
-        this.detectionBuffer[1]--;
-      }else{
-        moveBackward=false;
-      }
-    }
+    if (controlCoords.x - anchorCoords.x > cameraSensitivityOffset) moveRight = latencyGen.delayedFlagValue(Command.MOVE_RIGHT, true);
+    else moveRight = latencyGen.delayedFlagValue(Command.MOVE_RIGHT, false);
     
-    if(controlCoords.x - anchorCoords.x < -cameraSensitivityOffset){
-      if(this.detectionBuffer[2]>4){
-        moveLeft = true;
-      }else{
-        this.detectionBuffer[2]++;
-      }
-    } else{
-      if(this.detectionBuffer[2]>0){
-        this.detectionBuffer[2]--;
-      }else{
-        moveLeft=false;
-      }
-    }
-    
-    if(controlCoords.x - anchorCoords.x > cameraSensitivityOffset){
-      if(this.detectionBuffer[3]>4){
-        moveRight = true;
-      }else{
-        this.detectionBuffer[3]++;
-      }
-    } else{
-      if(this.detectionBuffer[3]>0){
-        this.detectionBuffer[3]--;
-      }else{
-        moveRight=false;
-      }
-    }
+    moveStop = (!moveForward && !moveBackward && !moveLeft && !moveRight);
   }
   
   
@@ -95,23 +48,47 @@ public class PoseControl extends ControlScheme {
     
     if (controlCoords == null || anchorCoords == null) return;
     
-    if(controlCoords.y - anchorCoords.y < -1.5*cameraSensitivityOffset) {
-      playerFocus.y = height/2 - cameraSensitivityOffset - 50;
-    } else if(controlCoords.y - anchorCoords.y > 1.5*cameraSensitivityOffset) {
-      playerFocus.y = height/2 + cameraSensitivityOffset + 50;
-    } else{
-      playerFocus.y = height/2;
-    }
+    if(controlCoords.y - anchorCoords.y < -1.5*cameraSensitivityOffset)  playerFocus.y = height/2 - cameraSensitivityOffset - 50;
+    else if (controlCoords.y - anchorCoords.y > 1.5*cameraSensitivityOffset)  playerFocus.y = height/2 + cameraSensitivityOffset + 50;
+    else playerFocus.y = height/2;
     
-    if(controlCoords.x - anchorCoords.x < -cameraSensitivityOffset) {
-      playerFocus.x = width/2 - cameraSensitivityOffset - 50;
-    } else if(controlCoords.x - anchorCoords.x > cameraSensitivityOffset) {
-      playerFocus.x = width/2 + cameraSensitivityOffset + 50;
-    } else {
-      playerFocus.x = width/2;
+    if (controlCoords.x - anchorCoords.x < -cameraSensitivityOffset)  playerFocus.x = width/2 - cameraSensitivityOffset - 50;
+    else if (controlCoords.x - anchorCoords.x > cameraSensitivityOffset)  playerFocus.x = width/2 + cameraSensitivityOffset + 50;
+    else  playerFocus.x = width/2;
+  }
+  
+}
+
+public class CommandLatencyGenerator {
+  
+  private int latency;
+  private HashMap<Command, Integer> latencyCounters;
+  private HashMap<Command, Boolean> previousFlagValues;
+  
+  public CommandLatencyGenerator(Command[] commands, int latency) {
+    this.latency = latency;
+    latencyCounters = new HashMap();
+    previousFlagValues = new HashMap();
+    for (Command command : commands) {
+       latencyCounters.put(command, 0);
+       previousFlagValues.put(command, false);
     }
   }
   
+  public boolean delayedFlagValue(Command command, boolean commandFlagValue) {
+    int latencyCounter = latencyCounters.get(command);
+    boolean previousFlagValue = previousFlagValues.get(command);
+    
+    if (commandFlagValue == previousFlagValue) return commandFlagValue;
+    
+    if (latencyCounter++ == latency) {
+      latencyCounters.put(command, 0);
+      previousFlagValues.put(command, commandFlagValue);
+      return commandFlagValue;
+    }
+    
+    return previousFlagValue;
+  }
 }
 
 public class PoseDetectionService {
@@ -125,8 +102,8 @@ public class PoseDetectionService {
     properties.setDatagramSize(10000); 
     properties.setListeningPort(9527);
     oscP5 = new OscP5(this, properties);
-    oscP5.plug(this,"parseData","/poses/xml");
     subscribers = new PoseControl[0];
+    oscP5.plug(this,"parseData","/poses/xml");
   }
   
   public void register(PoseControl subscriber) {
@@ -136,7 +113,7 @@ public class PoseDetectionService {
     subscribers = updatedSubscribers;
   }
   
-  public void parseData(String rawPoseData){
+  public void parseData(String rawPoseData) {
     XML xmlPoseData = parseXML(rawPoseData);
     int detectedPoseNum = xmlPoseData.getInt("nPoses");
     

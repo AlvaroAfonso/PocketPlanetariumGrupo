@@ -50,12 +50,16 @@ class Player {
   private void move() {      
     
     //Space engine control
+<<<<<<< HEAD
     if(controlScheme.moveForward || controlScheme.moveBackward || controlScheme.moveLeft || controlScheme.moveRight || controlScheme.moveUp || controlScheme.moveDown || controlScheme.moveStop){
       
       for(int i = 0; i < spaceshipTail.length; i++){
         
       }
       
+=======
+    if(controlScheme.moveForward || controlScheme.moveBackward || controlScheme.moveLeft || controlScheme.moveRight || controlScheme.moveUp || controlScheme.moveDown) {
+>>>>>>> master
       if(countFrame == 0){
       soundsManager.startSpaceshipEngine();
       }
