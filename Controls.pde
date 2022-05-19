@@ -1,4 +1,19 @@
 
+enum Command {
+    MOVE_FORWARD,
+    MOVE_BACKWARD,
+    MOVE_LEFT,
+    MOVE_RIGHT,
+    MOVE_UP,
+    MOVE_DOWN,
+    STOP,
+    
+    CAMERA_UP,
+    CAMERA_DOWN,
+    CAMERA_LEFT,
+    CAMERA_RIGHT
+}
+
 abstract class ControlScheme {
   // camera controls
   PlayerFocus playerFocus;

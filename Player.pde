@@ -44,7 +44,7 @@ class Player {
   private void move() {      
     
     //Space engine control
-    if(controlScheme.moveForward || controlScheme.moveBackward || controlScheme.moveLeft || controlScheme.moveRight || controlScheme.moveUp || controlScheme.moveDown || controlScheme.moveStop){
+    if(controlScheme.moveForward || controlScheme.moveBackward || controlScheme.moveLeft || controlScheme.moveRight || controlScheme.moveUp || controlScheme.moveDown) {
       if(countFrame == 0){
       soundsManager.startSpaceshipEngine();
       }
