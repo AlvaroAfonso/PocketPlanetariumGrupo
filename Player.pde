@@ -27,6 +27,8 @@ class Player {
   PVector acceleration = new PVector(0, 0, 0);
   float maxSpeed = 1000 * 300000; // X times the speed of light
   float engineAcceleration = 0.0025;
+  
+  int[] spaceshipTail;
 
   
   public Player(String name, ControlScheme controlScheme, PVector startingPosition) {
@@ -34,6 +36,10 @@ class Player {
     this.controlScheme = controlScheme;
     this.position = startingPosition;
     soundsManager = new SoundsManager(papplet);
+    spaceshipTail = new int[5];
+    for(int i = 0; i < spaceshipTail.length; i++){
+      spaceshipTail[i] = 0;
+    }
   }
   
   public void update() {
@@ -45,6 +51,11 @@ class Player {
     
     //Space engine control
     if(controlScheme.moveForward || controlScheme.moveBackward || controlScheme.moveLeft || controlScheme.moveRight || controlScheme.moveUp || controlScheme.moveDown || controlScheme.moveStop){
+      
+      for(int i = 0; i < spaceshipTail.length; i++){
+        
+      }
+      
       if(countFrame == 0){
       soundsManager.startSpaceshipEngine();
       }
@@ -133,6 +144,10 @@ class Player {
     horizontalAxis = toPVector(orientation.applyTo(Vector3D.plusI)).normalize();
     verticalAxis = toPVector(orientation.applyTo(Vector3D.minusJ)).normalize();
 
+  }
+  
+  class SpaceshipTail{
+    int x,y,z,radius;
   }
   
 }
