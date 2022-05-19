@@ -60,7 +60,7 @@ public class MouseKeyboardControl extends ControlScheme {
     if (useMouse) {
       parent.registerMethod("mouseEvent", this);
       playerFocus = new PlayerFocus(mouseX, mouseY);
-      cameraSensitivity = 1.75;
+      cameraSensitivity = 2;
       cameraSensitivityOffset = 150;
     } else {
       playerFocus = new PlayerFocus(width/2, height/2);
@@ -71,8 +71,6 @@ public class MouseKeyboardControl extends ControlScheme {
   
    public void keyEvent(KeyEvent event) {
      Command command = keyMap.parseKeyEvent(event);
-     println(event.getAction() + " " + event.getKey());
-     println("Result " + command);
      if (command == null) return;
      switch (command) {
        case MOVE_FORWARD:
@@ -105,19 +103,19 @@ public class MouseKeyboardControl extends ControlScheme {
          break;
        case CAMERA_UP:
          if (event.getAction() == KeyEvent.PRESS) playerFocus.y = height/2 - cameraSensitivityOffset - 50;
-         else if (event.getAction() == KeyEvent.RELEASE) playerFocus.y = height/2;
+         else if (event.getAction() == KeyEvent.RELEASE && playerFocus.y < height/2) playerFocus.y = height/2;
          break;
        case CAMERA_DOWN:
          if (event.getAction() == KeyEvent.PRESS) playerFocus.y = height/2 + cameraSensitivityOffset + 50;
-         else if (event.getAction() == KeyEvent.RELEASE) playerFocus.y = height/2;
+         else if (event.getAction() == KeyEvent.RELEASE && playerFocus.y > height/2) playerFocus.y = height/2;
          break;
        case CAMERA_LEFT:
          if (event.getAction() == KeyEvent.PRESS) playerFocus.x = width/2 - cameraSensitivityOffset - 50;
-         else if (event.getAction() == KeyEvent.RELEASE) playerFocus.x = width/2;
+         else if (event.getAction() == KeyEvent.RELEASE && playerFocus.x < width/2) playerFocus.x = width/2;
          break;
        case CAMERA_RIGHT:
          if (event.getAction() == KeyEvent.PRESS) playerFocus.x = width/2 + cameraSensitivityOffset + 50;
-         else if (event.getAction() == KeyEvent.RELEASE) playerFocus.x = width/2;
+         else if (event.getAction() == KeyEvent.RELEASE && playerFocus.x > width/2) playerFocus.x = width/2;
          break;
      }
    }
@@ -143,8 +141,6 @@ abstract class KeyboardMap {
   public Command parseKeyEvent(KeyEvent event) {
     Key eventKey = new Key(event.getKey(), event.getKeyCode());
     for (Command command : bindings.keySet()) {
-      //println(bindings.get(command).value + " CODED: " + bindings.get(command).isSpecial + " es igual a " + eventKey.value + " CODED: " + eventKey.isSpecial);
-      //println(bindings.get(command).equals(eventKey));
       if (bindings.get(command).equals(eventKey)) return command;
     }
     return null;
@@ -179,9 +175,6 @@ class Key {
   boolean equals(Object other) {
     if (other == null || this.getClass() != other.getClass()) return false;
     Key otherKey = (Key) other;
-    //println("Comparando con: " + otherKey.value + " CODED: " + otherKey.isSpecial);
-    //println(this.isSpecial == otherKey.isSpecial);
-    //println(value == otherKey.value);
     return this.isSpecial == otherKey.isSpecial && value == otherKey.value;
   }
 }

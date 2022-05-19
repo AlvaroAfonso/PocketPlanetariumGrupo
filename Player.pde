@@ -17,7 +17,8 @@ class Player {
   
   int countFrame = 0;
   
-  Rotation orientation = new Rotation(0, 0, 0, 0, false);
+  //Rotation orientation = new Rotation(0, 0, 0, 0, false);
+  Rotation orientation = new Rotation();
   PVector direction = new PVector(0, 0, -1);      // Must be kept normalized
   PVector verticalAxis = new PVector(0, -1, 0);   // Must be kept normalized
   PVector horizontalAxis = new PVector(1, 0, 0);  // Must be kept normalized
@@ -64,25 +65,21 @@ class Player {
     if (controlScheme.moveLeft) {
       PVector leftDirection = quaternionRotation(direction, verticalAxis, PI/2.0);
       acceleration.add(leftDirection.setMag(engineAcceleration));
-      //acceleration.add(horizontalAxis.copy().mult(-1).setMag(engineAcceleration));
     }
     
     if (controlScheme.moveRight) {
       PVector rightDirection = quaternionRotation(direction, verticalAxis, -PI/2.0);
       acceleration.add(rightDirection.setMag(engineAcceleration));
-      //acceleration.add(horizontalAxis.copy().setMag(engineAcceleration));
     }
     
     if (controlScheme.moveUp) {
-      //PVector upDirection = quaternionRotation(direction, horizontalAxis, PI/2.0);
-      //acceleration.add(upDirection.setMag(engineAcceleration));
       acceleration.add(verticalAxis.copy().setMag(engineAcceleration));
+      //acceleration.add((new PVector(0, -1, 0)).setMag(engineAcceleration));
     }
     
     if (controlScheme.moveDown) {
-      //PVector downDirection = quaternionRotation(direction, horizontalAxis, -PI/2.0);
-      //acceleration.add(downDirection.setMag(engineAcceleration));
       acceleration.add(verticalAxis.copy().mult(-1).setMag(engineAcceleration));
+      //acceleration.add((new PVector(0, 1, 0)).setMag(engineAcceleration));
     }
     
     if (controlScheme.moveStop) {
@@ -125,22 +122,17 @@ class Player {
     if (pitch >= TWO_PI || pitch <= TWO_PI) pitch = 0 + pitch % TWO_PI;
     if (yaw >= TWO_PI || yaw <= TWO_PI) yaw = 0 + yaw % TWO_PI;
     
-    Rotation verticalRotation = generateQuaternionRotor(horizontalAxis, -pitch);
+    Rotation verticalRotation = generateQuaternionRotor(new PVector(1, 0, 0), -pitch);
+    Rotation horizontalRotation = generateQuaternionRotor(new PVector(0, -1, 0), yaw);
+    Rotation rollRotation = generateQuaternionRotor(new PVector(0, 0, -1), roll);    
     
-    //verticalAxis = toPVector(verticalRotation.applyTo(Vector3D.minusJ));
+    //orientation = horizontalRotation.applyTo(verticalRotation);
+    orientation = rollRotation.applyTo(horizontalRotation.applyTo(verticalRotation));
     
-    Rotation horizontalRotation = generateQuaternionRotor(verticalAxis, yaw);
-    
-    orientation = horizontalRotation.applyTo(verticalRotation);
-   
-    direction = toPVector(orientation.applyTo(new Vector3D(0, 0, -1)));
-    
-    //spaceship.verticalAxis = toPVector(spaceship.orientation.applyTo(toVector3D(spaceship.verticalAxis))).normalize();
-    //spaceship.horizontalAxis = toPVector(spaceship.orientation.applyTo(toVector3D(spaceship.horizontalAxis))).normalize();
-    
-    //println("\n\nDir: " + spaceship.direction);
-    //println("Vertical Axis: " + spaceship.verticalAxis);
-    //println("Horizontal Axis: " + spaceship.horizontalAxis);
+    direction = toPVector(orientation.applyTo(Vector3D.minusK)).normalize();
+    horizontalAxis = toPVector(orientation.applyTo(Vector3D.plusI)).normalize();
+    verticalAxis = toPVector(orientation.applyTo(Vector3D.minusJ)).normalize();
+
   }
   
 }
