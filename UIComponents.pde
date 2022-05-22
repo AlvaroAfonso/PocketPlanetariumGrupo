@@ -1,4 +1,3 @@
-
 class HUD { 
   
   private final int LEFT_MARGIN = 50;

@@ -17,7 +17,7 @@ class SoundsManager {
     spaceshipTheme = new SoundFile(parent, "./data/music/legend1060 - spaceship theme.wav");
     //spaceshipEngine = new SoundFile(parent, "./data/music/loumarchais - spaceship movement.wav");
     ambientMusic.amp(0.5);
-    spaceshipEngine = new SinOsc(papplet);
+    spaceshipEngine = new SinOsc(appRoot);
     spaceshipTheme.amp(0.5);
     spaceshipEngine.amp(0.5);
   }

@@ -1,6 +1,8 @@
 //import shapes3d.org.apache.commons.math.*;
 //import shapes3d.org.apache.commons.math.geometry.*;
 //import peasy.org.apache.commons.math.geometry.*;
+import java.util.*;
+import peasy.org.apache.commons.math.geometry.*;
 
 private boolean loading;
 private float opacity = 0.0;
@@ -26,7 +28,7 @@ World solarSystemData;
 HUD hud;
 SoundsManager soundsManager;
 
-PApplet papplet = this;
+PApplet appRoot = this;
 
 PoseDetectionService poseDetectionService;
 
@@ -70,8 +72,8 @@ void load() {
   Player[] players = {player1, player2};
   //Player[] players = {player1};
   
-  player1Viewport = new MatchViewport(this, width/2, height, new PVector(0, 0), player1, players, solarSystemData);
-  player2Viewport = new MatchViewport(this, width/2, height, new PVector(width/2, 0), player2, players, solarSystemData);
+  player1Viewport = new PlayerViewport(this, width/2, height, new PVector(0, 0), player1, players, solarSystemData);
+  player2Viewport = new PlayerViewport(this, width/2, height, new PVector(width/2, 0), player2, players, solarSystemData);
   
   synchronized(this) {
     loading = false;

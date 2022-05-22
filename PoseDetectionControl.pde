@@ -1,4 +1,3 @@
-import java.util.Map;
 import oscP5.*;
 
 
@@ -59,37 +58,6 @@ public class PoseControl extends ControlScheme {
   
 }
 
-public class CommandLatencyGenerator {
-  
-  private int latency;
-  private HashMap<Command, Integer> latencyCounters;
-  private HashMap<Command, Boolean> previousFlagValues;
-  
-  public CommandLatencyGenerator(Command[] commands, int latency) {
-    this.latency = latency;
-    latencyCounters = new HashMap();
-    previousFlagValues = new HashMap();
-    for (Command command : commands) {
-       latencyCounters.put(command, 0);
-       previousFlagValues.put(command, false);
-    }
-  }
-  
-  public boolean delayedFlagValue(Command command, boolean commandFlagValue) {
-    int latencyCounter = latencyCounters.get(command);
-    boolean previousFlagValue = previousFlagValues.get(command);
-    
-    if (commandFlagValue == previousFlagValue) return commandFlagValue;
-    
-    if (latencyCounter++ == latency) {
-      latencyCounters.put(command, 0);
-      previousFlagValues.put(command, commandFlagValue);
-      return commandFlagValue;
-    }
-    
-    return previousFlagValue;
-  }
-}
 
 public class PoseDetectionService {
   private OscP5 oscP5;

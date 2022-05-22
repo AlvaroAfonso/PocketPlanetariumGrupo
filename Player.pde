@@ -1,4 +1,3 @@
-import peasy.org.apache.commons.math.geometry.*;
 
 class Player {
 
@@ -33,7 +32,7 @@ class Player {
     this.name = name;
     this.controlScheme = controlScheme;
     this.position = startingPosition;
-    soundsManager = new SoundsManager(papplet);
+    soundsManager = new SoundsManager(appRoot);
   }
   
   public void update() {
