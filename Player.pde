@@ -6,7 +6,7 @@ class Player {
   ControlScheme controlScheme;
   
   SoundsManager soundsManager;
-  
+    
   PVector spaceShipColor;
   
   float pitch = 0.0;
@@ -50,16 +50,13 @@ class Player {
   private void move() {      
     
     //Space engine control
-<<<<<<< HEAD
     if(controlScheme.moveForward || controlScheme.moveBackward || controlScheme.moveLeft || controlScheme.moveRight || controlScheme.moveUp || controlScheme.moveDown || controlScheme.moveStop){
       
       for(int i = 0; i < spaceshipTail.length; i++){
         
       }
       
-=======
     if(controlScheme.moveForward || controlScheme.moveBackward || controlScheme.moveLeft || controlScheme.moveRight || controlScheme.moveUp || controlScheme.moveDown) {
->>>>>>> master
       if(countFrame == 0){
       soundsManager.startSpaceshipEngine();
       }
@@ -111,6 +108,7 @@ class Player {
     }    
     
     position.add(speed);
+    }
   }
   
   void updateOrientation() {  
@@ -150,9 +148,13 @@ class Player {
 
   }
   
-  class SpaceshipTail{
+  /*class SpaceshipTailPoint{
     int x,y,z,radius;
-  }
+    
+    SpaceshipTailPoint(){
+      
+    }
+  }*/
   
 }
 
@@ -162,9 +164,11 @@ class PlayerModel {
   
   PGraphics canvas;
   
+  PShape shape;
+  
   PImage sprite; // Looking right by default
   Player player;
-  
+    
   public PlayerModel(PGraphics canvas, Player player) {
     this.canvas = canvas;
     this.player = player;
@@ -190,6 +194,8 @@ class PlayerModel {
         canvas.resetMatrix();
         canvas.applyMatrix(billboardMatrix);
         
+        print(billboardMatrix);
+        
         //float[] cameraRotations = cameraControl.camera.getRotations();
         //rotateX();
         canvas.pushStyle();
@@ -198,6 +204,10 @@ class PlayerModel {
           canvas.scale(0.003);
           //Dcanvas.scale(0.05);
           canvas.image(sprite, 0, 0);
+          //shape = createShape(SPHERE, 30);
+          //shape.setStroke(255);
+          //shape.fill(255);
+          //canvas.shape(shape);
         canvas.popStyle();
       canvas.popMatrix();
     canvas.popMatrix();    
