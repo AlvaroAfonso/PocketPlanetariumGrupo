@@ -17,7 +17,9 @@
 /*-------------------------------- 
 2. SCENE
 --------------------------------*/
+class VersusMatchConfigurationScene extends Scene {
 
+}
 
 /*--------------------------------  
 3. VIEWPORT

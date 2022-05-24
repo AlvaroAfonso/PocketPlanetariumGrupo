@@ -18,11 +18,31 @@
 /*-------------------------------- 
 2. SCENE
 --------------------------------*/
+class MainMenu extends Scene {
 
+  public MainMenu() {
+    viewports.add(new MenuBackground());
+  }
+  
+}
 
 /*--------------------------------  
 3. VIEWPORT
 --------------------------------*/
+class MenuBackground extends Viewport {
+  
+  WorldModel gameWorld;
+  
+  public MenuBackground() {
+    super(width, height, new PVector(0,0), Panel.DEFAULT_PRIORITY);
+    this.gameWorld = new WorldModel(canvas, solarSystemData);
+  }
+
+   @Override
+   protected void renderContent() {
+     gameWorld.display(true);
+   }
+}
 
 
 /*-------------------------------- 

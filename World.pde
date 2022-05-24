@@ -1,6 +1,18 @@
+/*
+*  -Index-
+*    1. ASTRONOMICAL BODY
+*    2. WORLD 
+*    3. WORLD MODEL
+*/
+
+
+/*-------------------------------- 
+1. ASTRONOMICAL BODY
+--------------------------------*/
 public float astronomicalUnit = 1.4959878707E+8 / DISTANCE_SCALE; // AU in kilometers
 public float time_acceleration =  30 * 60 * 24 * SPEED_FACTOR; 
-  
+
+public static final float LIGHT_SPEED = 300000;
   
 public final float SOLAR_MASS = 2E30;       // kg
 public final float EARTH_MASS = 5.9722E24;  // kg
@@ -11,8 +23,6 @@ public float earthRotationPeriod = 60 * 60 * 24 / time_acceleration;
 public float earthOrbitalPeriod =  365 * earthRotationPeriod;
 
 public float GRAVITATIONAL_CONSTANT = 39.478 * pow(astronomicalUnit, 3) /  pow(earthOrbitalPeriod, 2); // AU^3 / (years^2 * SolarMass)
-
-public PVector lightFall = new PVector(-4.799998, 0.5, -1.4901161E-8);
 
 
 class AstronomicalBody {
@@ -129,7 +139,9 @@ class AstronomicalBody {
 }
 
 
-
+/*-------------------------------- 
+2. WORLD
+--------------------------------*/
 class World {
   
   final AstronomicalBody sun = new AstronomicalBody("Sun", 1, 109 * earthRadius, 0, 0.0686301);
@@ -195,6 +207,9 @@ class World {
 }
 
 
+/*-------------------------------- 
+3. WORLD MODEL
+--------------------------------*/
 class WorldModel {
   
   private final World worldData;

@@ -27,6 +27,13 @@ public class VersusMatchConfig {
   int playerLives;
   float matchTime;
   float planetsOrbitationSpeed;
+  
+  public VersusMatchConfig(Player[] players, World worldData) {
+    this.players = players;
+    this.worldData = worldData;
+    viewportLayout = Layout.VERTICAL;
+  }
+  
 }
 
 
@@ -38,20 +45,22 @@ public class VersusMatchScene extends Scene {
   private Player[] players;
   private World worldData;
   
-  public VersusMatchScene(PApplet root, VersusMatchConfig config) {
-    super();
+  public VersusMatchScene(VersusMatchConfig config) {
+    super();    
     this.players = config.players;
     this.worldData = config.worldData;
     
     int viewportWidth = config.viewportLayout == Layout.VERTICAL ? width/config.players.length : width;
     int viewportHeight = config.viewportLayout == Layout.HORIZONTAL ? height/config.players.length : height;
     
-    for (int i = 0; i < config.players.length; i++) {
+    for (int i = 0; i < players.length; i++) {
       PVector viewportCoords = config.viewportLayout == Layout.VERTICAL ? new PVector(i*viewportWidth, 0) : new PVector(0, i*viewportHeight);
-      viewports.add(new PlayerViewport(root, viewportWidth, viewportHeight, viewportCoords, players[i], players, worldData));
+      viewports.add(new PlayerViewport(viewportWidth, viewportHeight, viewportCoords, players[i], players, worldData));
+      uiComponents.add(new PlayerHUD(players[i], viewportWidth, viewportHeight, viewportCoords, Panel.DEFAULT_PRIORITY + 1000));
     }
-    
+
     appRoot.registerMethod("pre", this);
+    
   }
   
   public void pre() {
@@ -75,19 +84,19 @@ public class PlayerViewport extends Viewport {
   
   private Camera cam;
   
-  public PlayerViewport(PApplet parent, int viewportWidth, int viewportHeight, PVector screenCoords, Player currentPlayer, Player[] players, World world) {
-    super(parent, viewportWidth, viewportHeight, screenCoords, DEFAULT_PRIORITY);
+  public PlayerViewport(int viewportWidth, int viewportHeight, PVector screenCoords, Player currentPlayer, Player[] players, World world) {
+    super(viewportWidth, viewportHeight, screenCoords, DEFAULT_PRIORITY);
     this.currentPlayer = currentPlayer;
     this.players = new ArrayList();
     this.gameWorld = new WorldModel(canvas, world);
-    this.cam = new NativeThirdPersonCamera(parent, canvas, currentPlayer);
+    this.cam = new NativeThirdPersonCamera(canvas, currentPlayer);
     for (Player player : players) {
       this.players.add(new PlayerModel(canvas, player));
     }
   }  
   
   @Override
-  protected void renderGraphics() {
+  protected void renderContent() {
     canvas.background(0); 
     gameWorld.display(true);
       
@@ -103,8 +112,8 @@ public class PlayerViewport extends Viewport {
       }
     });
       
-    for (PlayerModel player : players) {
-      player.display();
+    for (PlayerModel model : players) {
+      model.display();
     }
   }
   
@@ -119,87 +128,3 @@ public class PlayerViewport extends Viewport {
 /*-------------------------------- 
 4. UI COMPONENTS
 --------------------------------*/
-
-
-/*--------------------------------  
-5. CONTROLS
---------------------------------*/
-enum Command {
-    MOVE_FORWARD,
-    MOVE_BACKWARD,
-    MOVE_LEFT,
-    MOVE_RIGHT,
-    MOVE_UP,
-    MOVE_DOWN,
-    STOP,
-    
-    CAMERA_UP,
-    CAMERA_DOWN,
-    CAMERA_LEFT,
-    CAMERA_RIGHT
-}
-
-abstract class ControlScheme {
-  // camera controls
-  PlayerFocus playerFocus;
-  float cameraSensitivity;
-  int cameraSensitivityOffset;
-  
-  // main keyboard controls
-  boolean moveForward = false;
-  boolean moveLeft = false;
-  boolean moveBackward = false;
-  boolean moveRight = false;
-  boolean moveUp = false;
-  boolean moveDown = false;
-  boolean moveStop = false;
-  
-  // solar system controls
-  boolean speedUp = false;
-  boolean slowDown = false;
-  
-  // system controls
-  
-}
-
-class PlayerFocus {  
-   float x;
-   float y;   
-   
-   public PlayerFocus(float x, float y) {
-     this.x = x;
-     this.y = y;
-   }
-}
-
-public class CommandLatencyGenerator {
-  
-  private int latency;
-  private HashMap<Command, Integer> latencyCounters;
-  private HashMap<Command, Boolean> previousFlagValues;
-  
-  public CommandLatencyGenerator(Command[] commands, int latency) {
-    this.latency = latency;
-    latencyCounters = new HashMap();
-    previousFlagValues = new HashMap();
-    for (Command command : commands) {
-       latencyCounters.put(command, 0);
-       previousFlagValues.put(command, false);
-    }
-  }
-  
-  public boolean delayedFlagValue(Command command, boolean commandFlagValue) {
-    int latencyCounter = latencyCounters.get(command);
-    boolean previousFlagValue = previousFlagValues.get(command);
-    
-    if (commandFlagValue == previousFlagValue) return commandFlagValue;
-    
-    if (latencyCounter++ == latency) {
-      latencyCounters.put(command, 0);
-      previousFlagValues.put(command, commandFlagValue);
-      return commandFlagValue;
-    }
-    
-    return previousFlagValue;
-  }
-} 

@@ -1,26 +1,25 @@
+/*
+*  -Index-
+*    1. SCENE
+*    2. PANEL
+*    3. UI COMPONENT
+*    4. VIEWPORT
+*/
 
+
+/*-------------------------------- 
+1. SCENE
+--------------------------------*/
 public abstract class  Scene {
   
-  TreeSet<Viewport> viewports;
-  TreeSet<UIComponent> uiComponents;
+  SortedArrayList<Viewport> viewports;
+  SortedArrayList<UIComponent> uiComponents;
   
   public Scene() {
-    viewports = new TreeSet();
-    uiComponents = new TreeSet();
+    PriorityPanelComparator priorityPanelComparator = new PriorityPanelComparator();
+    viewports = new SortedArrayList(priorityPanelComparator);
+    uiComponents = new SortedArrayList(priorityPanelComparator);
   }
-  
-  /*
-  public Scene() {
-    panels = new TreeSet(new Comparator<Panel>() {
-      @Override
-      public int compare(Panel paneA, Panel paneB) {
-        if (paneA.priority > paneB.priority) return 1;
-        if (paneA.priority < paneB.priority) return -1;
-        return 0;
-      }
-    });
-  }
-  */
 
   public void display() {
     for (Viewport viewport : viewports) {
@@ -34,29 +33,32 @@ public abstract class  Scene {
 }
 
 
-public abstract class Panel implements Comparable<Panel> {
+/*-------------------------------- 
+2. PANEL
+--------------------------------*/
+public class PriorityPanelComparator implements Comparator<Panel> {
+  @Override
+  public int compare(Panel panelA, Panel panelB) { 
+    if (panelA.priority > panelB.priority) return 1;
+    if (panelA.priority < panelB.priority) return -1;
+    return 0;
+  }
+}
+
+public abstract class Panel {
   
   public final static int DEFAULT_PRIORITY = 0;
   
-  protected PApplet parent;
   protected PGraphics canvas; 
   
   protected PVector screenCoords;
   public int priority;
   
   
-  public Panel(PApplet parent, int panelWidth, int panelHeight, PVector screenCoords, int priority, String renderer) {
-    this.parent = parent;
+  public Panel(int panelWidth, int panelHeight, PVector screenCoords, int priority, String renderer) {
     this.canvas = createGraphics(panelWidth, panelHeight, renderer);
     this.screenCoords = screenCoords;
     this.priority = priority;
-  }
-  
-  @Override
-  public int compareTo(Panel otherPanel) { 
-    if (this.priority > otherPanel.priority) return 1;
-    if (this.priority < otherPanel.priority) return -1;
-    return 0;
   }
   
   public void display() {
@@ -71,30 +73,24 @@ public abstract class Panel implements Comparable<Panel> {
 }
 
 
+/*-------------------------------- 
+3. UI COMPONENT
+--------------------------------*/
 public abstract class UIComponent extends Panel {
 
-  public UIComponent(PApplet parent, int componentWidth, int componentHeight, PVector screenCoords, int priority) {
-    super(parent, componentWidth, componentHeight, screenCoords, priority, P2D);  
+  public UIComponent(int componentWidth, int componentHeight, PVector screenCoords, int priority) {
+    super(componentWidth, componentHeight, screenCoords, priority, P2D);  
   }
   
 }
 
+
+/*-------------------------------- 
+4. VIEWPORT
+--------------------------------*/
 public abstract class Viewport extends Panel {
-  
-  TreeSet<UIComponent> uiComponents;
-  
-  public Viewport(PApplet parent, int viewportWidth, int viewportHeight, PVector screenCoords, int priority) {
-    super(parent, viewportWidth, viewportHeight, screenCoords, priority, P3D);  
-    uiComponents = new TreeSet();
+   
+  public Viewport(int viewportWidth, int viewportHeight, PVector screenCoords, int priority) {
+    super(viewportWidth, viewportHeight, screenCoords, priority, P3D);  
   }
-  
-  @Override
-  protected void renderContent() {
-    renderGraphics();
-    for (UIComponent uiComponent : uiComponents) {
-      uiComponent.display();      
-    }
-  }
-  
-  protected abstract void renderGraphics();
 }

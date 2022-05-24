@@ -12,9 +12,9 @@ class SoundsManager {
   private float freqHighNave = 500;
   private float freqLowNave = 450;
   
-  SoundsManager(PApplet parent) {
-    ambientMusic = new SoundFile(parent, "./data/music/mrthenoronha - ambient.wav");
-    spaceshipTheme = new SoundFile(parent, "./data/music/legend1060 - spaceship theme.wav");
+  SoundsManager() {
+    ambientMusic = new SoundFile(appRoot, "./data/music/mrthenoronha - ambient.wav");
+    spaceshipTheme = new SoundFile(appRoot, "./data/music/legend1060 - spaceship theme.wav");
     //spaceshipEngine = new SoundFile(parent, "./data/music/loumarchais - spaceship movement.wav");
     ambientMusic.amp(0.5);
     spaceshipEngine = new SinOsc(appRoot);
