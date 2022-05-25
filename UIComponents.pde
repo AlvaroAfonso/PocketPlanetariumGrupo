@@ -1,5 +1,36 @@
 import controlP5.*;
 
+class ClickableButton extends Button {
+  
+  private class ClickableButtonHandler implements CallbackListener {
+    
+    private ClickableButton button;
+    
+    public ClickableButtonHandler(ClickableButton button) {
+      this.button = button;
+    }
+    
+    public void controlEvent(CallbackEvent theEvent) {
+      if (theEvent.getAction() == ControlP5.ACTION_CLICK) button.click();
+    }
+  }
+  
+  private CallbackListener handler = new ClickableButtonHandler(this);  
+  boolean isClicked;
+  
+  public ClickableButton(ControlP5 controlP5) {
+    super(controlP5, "play");
+    this.addCallback(handler);
+    isClicked = false;
+  }
+  
+  public void click() {
+    this.isClicked = true;
+  }
+  
+}
+
+
 class PlayerHUD extends UIComponent { 
   
   private ControlP5 controlP5;
@@ -43,6 +74,13 @@ class PlayerHUD extends UIComponent {
         || player.controller.moveUp || player.controller.moveDown) speedmeter.setColorForeground(color(255, 255, 0));
     else speedmeter.setColorForeground(color(255));
     speedmeter.setValue(player.speed.mag()/LIGHT_SPEED  * 60 * DISTANCE_SCALE);
+  }
+  
+  @Override
+  public void dispose() {
+    controlP5.dispose();
+    controlP5.setVisible(false);
+    controlP5.setAutoDraw(false);
   }
 
 }

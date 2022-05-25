@@ -3,6 +3,9 @@
 *    1. PLAYER COMMANDS
 *    2. PLAYER 
 *    3. PLAYER MODEL
+*    4. BLASTER
+*    5. BLASTER MODEL
+*    6. TAIL 
 */
 
 
@@ -17,6 +20,7 @@ enum PlayerCommand {
     MOVE_UP,
     MOVE_DOWN,
     STOP,
+    SHOOT,
     
     CAMERA_UP,
     CAMERA_DOWN,
@@ -24,19 +28,16 @@ enum PlayerCommand {
     CAMERA_RIGHT
 }
 
-
 /*-------------------------------- 
 2. PLAYER
 --------------------------------*/
-class Player {
+class Player implements Collisionable {
   
   public float maxSpeed = 1000 * LIGHT_SPEED;
   public float engineAcceleration = 0.003;
 
   String name;
   Control controller;
-  
-  SoundsManager soundsManager;
   
   PVector spaceShipColor;
   
@@ -45,6 +46,7 @@ class Player {
   float roll = 0.0;
   
   PVector position;
+  HitBox hitbox;
   
   int countFrame = 0;
   
@@ -57,18 +59,21 @@ class Player {
   PVector speed = new PVector(0, 0, 0);
   PVector acceleration = new PVector(0, 0, 0);
   
-
+  Blaster blaster;
   
   public Player(String name, Control controlScheme, PVector startingPosition) {
     this.name = name;
     this.controller = controlScheme;
     this.position = startingPosition;
-    soundsManager = new SoundsManager();
+    this.hitbox = new HitBox(loadImage("./data/images/Spaceship.png"), 0.001, this.position);
+    this.blaster = new Blaster(50);
   }
   
   public void update() {
     updateOrientation();
     move();
+    blaster.update();
+    this.hitbox.position = position;
   }
   
   private void move() {          
@@ -104,6 +109,8 @@ class Player {
       acceleration = new PVector(0, 0, 0);
       return;
     }
+    
+    if (controller.activateBlaster) blaster.shoot(PVector.add(position, direction.copy().setMag(4*earthRadius)), direction); 
     
     // Sound
     if (acceleration.mag() > 0 && countFrame++ == 0) {
@@ -151,6 +158,10 @@ class Player {
 
   }
   
+  public CollisionMesh getCollisionMesh() {
+    return hitbox;
+  }
+  
 }
 
 
@@ -164,18 +175,19 @@ class PlayerModel {
   PImage sprite; // Looking right by default
   Player player;
   
+  Tail tail;
+  
   public PlayerModel(PGraphics canvas, Player player) {
     this.canvas = canvas;
     this.player = player;
-    sprite = loadImage("./data/images/Spaceship.png");
+    this.sprite = loadImage("./data/images/Spaceship.png");
     //imageMode(CENTER);
   }
   
-  void display() { 
+  void display() {         
     canvas.pushMatrix();    
       canvas.translate(width/2.0 + player.position.x, height/2.0 + player.position.y, player.position.z);  
       canvas.pushMatrix();
-      
         try {
           double[] eulerAngles = player.orientation.getAngles(RotationOrder.XYZ);
           canvas.rotateX((float) eulerAngles[0]);
@@ -199,3 +211,236 @@ class PlayerModel {
   }
   
 }   
+
+
+/*-------------------------------- 
+4. BLASTER
+--------------------------------*/
+class Bullet  implements Collisionable {
+  
+  float baseSpeed = 300 * LIGHT_SPEED / DISTANCE_SCALE / 60;
+  
+  PVector position;
+  PVector direction;
+  PVector speed;
+  int timeout;
+  
+  HitBox hitbox;
+  boolean exploded;
+  int explosionDuration;
+  
+  Player trackedPlayer;
+  
+  public Bullet(PVector position, PVector direction) {
+    this.position = position.copy();
+    this.direction = direction.copy();
+    this.speed = this.direction.copy().setMag(baseSpeed);
+    this.timeout = 1500;
+    this.hitbox = new HitBox(2*earthRadius, this.position);
+    exploded = false;
+    explosionDuration = 50;
+    trackedPlayer = null;
+  }
+  
+  public void move(){
+    if (trackedPlayer != null && !exploded) speed = PVector.sub(trackedPlayer.position, this.position).setMag(baseSpeed);
+    this.position.add(this.speed);
+    this.timeout--;
+  } 
+  
+  public void collide() {
+    speed = new PVector(0, 0, 0);
+    exploded = true;
+    timeout = explosionDuration;
+  }
+  
+  public void trackPlayers(ArrayList<Player> players) {
+    if (this.exploded) return;
+    float shortestDistance2Player = MAX_FLOAT;
+    Player closestPlayer = null; 
+    float cone_height = 500*earthRadius;
+    float base_radius = 50*earthRadius;
+    for (Player player : players) {
+      float cone_dist = PVector.dot(PVector.sub(player.position, this.position), this.speed.copy().setMag(cone_height));
+      if (cone_dist > cone_height || cone_dist < 0) continue;
+      float cone_radius = (cone_dist / cone_height) * base_radius;
+      float orth_distance = (PVector.sub(PVector.sub(player.position, this.position),  PVector.mult(this.speed, cone_dist))).mag();
+
+      if (orth_distance < cone_radius && cone_dist < shortestDistance2Player) {
+        shortestDistance2Player = cone_dist;
+        closestPlayer = player;
+      }
+    }
+    if (closestPlayer != null) {
+      trackedPlayer = closestPlayer;
+    }
+  }
+
+  public ArrayList<Integer> checkCollisions(List<Collisionable> bodies) {
+    
+    ArrayList<Integer> collidedBodiesIndexes = new ArrayList();
+    
+    if (exploded) return collidedBodiesIndexes;
+    
+    this.hitbox.position = position;
+    
+    for (Collisionable body : bodies) {
+      if (this.hitbox.isCollidingWith(body)) collidedBodiesIndexes.add(bodies.indexOf(body));
+    }
+    
+    if (collidedBodiesIndexes.size() > 0) collide(); 
+    
+    return collidedBodiesIndexes;
+  }
+  
+  public CollisionMesh getCollisionMesh() {
+    return hitbox;
+  }
+}
+
+
+
+class Blaster {
+  
+  ArrayList<Bullet> bullets;
+  int maxBullets;
+  
+  int cooldown = 0;
+  
+  public Blaster(int maxBullets) {
+    bullets = new ArrayList();
+    this.maxBullets = maxBullets;
+  }
+  
+  public void shoot(PVector position, PVector direction) {
+    if (bullets.size() < maxBullets && cooldown <= 0) {
+      bullets.add(new Bullet(position, direction));
+      cooldown = 30;
+    }
+  }
+  
+  public void update() {    
+    cooldown = cooldown > 0 ? cooldown-1 : 0;
+    for (int i = 0; i < bullets.size(); i++) {
+      bullets.get(i).move();
+      if (bullets.get(i).timeout <= 0) bullets.remove(i);
+    }
+  }
+  
+  public void trackPlayers(ArrayList<Player> players) {
+    for (Bullet bullet : bullets) {
+      bullet.trackPlayers(players);
+    }
+  }
+  
+  public HashMap<Integer,Integer> checkCollisions(List<Collisionable> bodies) {
+    HashMap<Integer, Integer> collidedBodiesCollisions = new HashMap();
+    
+    for (Bullet bullet : bullets) {    
+      ArrayList<Integer> collidedBodiesIndexes = bullet.checkCollisions(bodies);
+      
+      for (Integer collidedBodyIndex : collidedBodiesIndexes) {
+        Integer bodyCollisions = collidedBodiesCollisions.get(collidedBodyIndex);
+        if (bodyCollisions == null) collidedBodiesCollisions.put(collidedBodyIndex, 1);
+        else collidedBodiesCollisions.put(collidedBodyIndex, bodyCollisions + 1);
+      }
+    }
+    
+    return collidedBodiesCollisions;
+  }
+  
+}
+
+
+/*-------------------------------- 
+5. BLASTER MODEL
+--------------------------------*/
+class BulletModel {
+  
+  PGraphics canvas;
+  
+  PShape bulletMesh;
+  
+  boolean isTracking;
+  Bullet trackedBullet;
+  
+  int explosionAnimationFrame;
+  
+  public BulletModel(PGraphics canvas) {
+    this.canvas = canvas;
+    bulletMesh = createShape(BOX, 2*earthRadius);
+    isTracking = false;
+  }
+  
+  public void trackBullet(Bullet bullet) {
+    trackedBullet = bullet;
+    isTracking = true;
+  }
+  
+  public void reset() {
+    explosionAnimationFrame = 0;
+    trackedBullet = null;
+    isTracking = false;
+  }
+      
+  public void display() {
+    if (trackedBullet.timeout <= 0) reset();
+    if (!isTracking) return;
+    canvas.pushMatrix();
+      canvas.translate(width/2.0 + trackedBullet.position.x, height/2.0 + trackedBullet.position.y, trackedBullet.position.z);
+      canvas.pushStyle();
+        bulletMesh.setFill(color(0, 240, 255));
+        bulletMesh.setStroke(0);
+        //canvas.sphere(earthRadius);
+        if (trackedBullet.exploded) displayExplodingAnimation();
+        else canvas.shape(bulletMesh);
+      canvas.popStyle();
+    canvas.popMatrix();
+  }
+  
+  public void displayExplodingAnimation() {
+    bulletMesh.setFill(color(255, 0, 0));
+    canvas.shape(bulletMesh);
+  }
+
+}
+
+
+class BlasterModel {
+  Blaster blaster;
+  
+  PGraphics canvas;
+  BulletModel[] bulletModels;
+   
+  BlasterModel(PGraphics canvas, Blaster blaster) {
+    this.canvas = canvas;
+    this.blaster = blaster;
+    bulletModels = new BulletModel[blaster.maxBullets];
+    for (int i = 0; i < blaster.maxBullets; i++) {
+      bulletModels[i] = new BulletModel(canvas);
+    }
+  }
+  
+  public void display() {
+    for (Bullet bullet : blaster.bullets) {   
+      BulletModel matchingModel = bulletModels[blaster.bullets.indexOf(bullet)];
+      if (!matchingModel.isTracking) matchingModel.trackBullet(bullet);
+      if (matchingModel.isTracking) matchingModel.display();
+    }
+  }
+}
+
+
+/*-------------------------------- 
+6. TAIL
+--------------------------------*/
+class Tail {
+  
+  int[] particlesRadius;
+  
+  public Tail() {
+    particlesRadius = new int[5];
+  }
+  
+  
+}

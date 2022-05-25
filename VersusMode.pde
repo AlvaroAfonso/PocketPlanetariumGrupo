@@ -19,7 +19,7 @@ public enum Layout {
 
 public class VersusMatchConfig {
 
-  Player[] players;
+  ArrayList<Player> players;
   World worldData;
   
   Layout viewportLayout;
@@ -28,7 +28,7 @@ public class VersusMatchConfig {
   float matchTime;
   float planetsOrbitationSpeed;
   
-  public VersusMatchConfig(Player[] players, World worldData) {
+  public VersusMatchConfig(ArrayList<Player> players, World worldData) {
     this.players = players;
     this.worldData = worldData;
     viewportLayout = Layout.VERTICAL;
@@ -42,7 +42,7 @@ public class VersusMatchConfig {
 --------------------------------*/
 public class VersusMatchScene extends Scene {
   
-  private Player[] players;
+  private ArrayList<Player> players;
   private World worldData;
   
   public VersusMatchScene(VersusMatchConfig config) {
@@ -50,13 +50,14 @@ public class VersusMatchScene extends Scene {
     this.players = config.players;
     this.worldData = config.worldData;
     
-    int viewportWidth = config.viewportLayout == Layout.VERTICAL ? width/config.players.length : width;
-    int viewportHeight = config.viewportLayout == Layout.HORIZONTAL ? height/config.players.length : height;
+    int viewportWidth = config.viewportLayout == Layout.VERTICAL ? width/config.players.size() : width;
+    int viewportHeight = config.viewportLayout == Layout.HORIZONTAL ? height/config.players.size() : height;
     
-    for (int i = 0; i < players.length; i++) {
-      PVector viewportCoords = config.viewportLayout == Layout.VERTICAL ? new PVector(i*viewportWidth, 0) : new PVector(0, i*viewportHeight);
-      viewports.add(new PlayerViewport(viewportWidth, viewportHeight, viewportCoords, players[i], players, worldData));
-      uiComponents.add(new PlayerHUD(players[i], viewportWidth, viewportHeight, viewportCoords, Panel.DEFAULT_PRIORITY + 1000));
+    for (Player player : players) {
+      PVector viewportCoords = config.viewportLayout == Layout.VERTICAL ? new PVector(players.indexOf(player)*viewportWidth, 0) : new PVector(0, players.indexOf(player)*viewportHeight);
+      viewports.add(new PlayerViewport(viewportWidth, viewportHeight, viewportCoords, player, players, worldData));
+      uiComponents.add(new PlayerHUD(player, viewportWidth, viewportHeight, viewportCoords, Panel.DEFAULT_PRIORITY + 1000));
+      
     }
 
     appRoot.registerMethod("pre", this);
@@ -64,10 +65,17 @@ public class VersusMatchScene extends Scene {
   }
   
   public void pre() {
+    ArrayList<Collisionable> collisionableBodies = new ArrayList();
     worldData.update();
     for (Player player : players) {
       player.update();
+      collisionableBodies.add(player);
     }
+    for (Player player : players) {
+      player.blaster.trackPlayers(players);
+      player.blaster.checkCollisions(collisionableBodies);
+    }
+    
   } 
 
 }
@@ -79,19 +87,22 @@ public class VersusMatchScene extends Scene {
 public class PlayerViewport extends Viewport {
   
   private Player currentPlayer;
-  private ArrayList<PlayerModel> players;
+  private ArrayList<PlayerModel> playerModels;
+  private ArrayList<BlasterModel> blasterModels;
   private WorldModel gameWorld;
   
   private Camera cam;
   
-  public PlayerViewport(int viewportWidth, int viewportHeight, PVector screenCoords, Player currentPlayer, Player[] players, World world) {
+  public PlayerViewport(int viewportWidth, int viewportHeight, PVector screenCoords, Player currentPlayer, ArrayList<Player> players, World world) {
     super(viewportWidth, viewportHeight, screenCoords, DEFAULT_PRIORITY);
     this.currentPlayer = currentPlayer;
-    this.players = new ArrayList();
     this.gameWorld = new WorldModel(canvas, world);
     this.cam = new NativeThirdPersonCamera(canvas, currentPlayer);
+    this.playerModels = new ArrayList();
+    this.blasterModels = new ArrayList();
     for (Player player : players) {
-      this.players.add(new PlayerModel(canvas, player));
+      playerModels.add(new PlayerModel(canvas, player));
+      blasterModels.add(new BlasterModel(canvas, player.blaster));
     }
   }  
   
@@ -99,9 +110,13 @@ public class PlayerViewport extends Viewport {
   protected void renderContent() {
     canvas.background(0); 
     gameWorld.display(true);
+    
+    for (BlasterModel blasterModel : blasterModels) {
+      blasterModel.display();
+    } 
       
     //We sort the players from farthest to closest based on their distance to current player.
-    Collections.sort(players, new Comparator<PlayerModel>() {
+    Collections.sort(playerModels, new Comparator<PlayerModel>() {
       @Override
       public int compare(PlayerModel modelA, PlayerModel modelB) {
         float distanceA = distanceBetween(cam.getPosition(), modelA.player.position);
@@ -111,11 +126,17 @@ public class PlayerViewport extends Viewport {
         return 0;
       }
     });
-      
-    for (PlayerModel model : players) {
-      model.display();
-    }
+    
+    for (PlayerModel playerModel : playerModels) {
+      playerModel.display();
+    }    
   }
+  
+  @Override
+   public void dispose() {
+     appRoot.unregisterMethod("pre", this);
+     currentPlayer.controller.dispose();
+   }
   
 }
 

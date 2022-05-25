@@ -30,6 +30,15 @@ public abstract class  Scene {
     }
   }
   
+  public void dispose() {
+    for (Viewport viewport : viewports) {
+      viewport.dispose();      
+    }
+    for (UIComponent uiComponent : uiComponents) {
+      uiComponent.dispose();      
+    }
+  }
+  
 }
 
 
@@ -68,6 +77,8 @@ public abstract class Panel {
     image(canvas, screenCoords.x, screenCoords.y);
   }
   
+  public abstract void dispose();
+  
   protected abstract void renderContent();
   
 }
@@ -77,9 +88,12 @@ public abstract class Panel {
 3. UI COMPONENT
 --------------------------------*/
 public abstract class UIComponent extends Panel {
+  
+  private boolean isDisabled;
 
   public UIComponent(int componentWidth, int componentHeight, PVector screenCoords, int priority) {
     super(componentWidth, componentHeight, screenCoords, priority, P2D);  
+    isDisabled = false;
   }
   
 }

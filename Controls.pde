@@ -39,8 +39,12 @@ abstract class Control {
   boolean moveUp = false;
   boolean moveDown = false;
   boolean moveStop = false;
+  
+  boolean activateBlaster = false;
 
   // system controls
+  
+  public abstract void dispose();
   
 }
 
@@ -63,6 +67,7 @@ class MainKeyboardMap extends KeyboardMap {
     bindings.put(PlayerCommand.MOVE_UP, new Key('q'));
     bindings.put(PlayerCommand.MOVE_DOWN, new Key('e'));
     bindings.put(PlayerCommand.STOP, new Key('r'));
+    bindings.put(PlayerCommand.SHOOT, new Key('c'));
     
     bindings.put(PlayerCommand.CAMERA_UP, new Key('t'));
     bindings.put(PlayerCommand.CAMERA_DOWN, new Key('g'));
@@ -81,6 +86,7 @@ class AltKeyboardMap extends KeyboardMap {
     bindings.put(PlayerCommand.MOVE_UP, new Key('u'));
     bindings.put(PlayerCommand.MOVE_DOWN, new Key('o'));
     bindings.put(PlayerCommand.STOP, new Key('p'));
+    bindings.put(PlayerCommand.SHOOT, new Key('n'));
     
     bindings.put(PlayerCommand.CAMERA_UP, new Key(CODED, UP));
     bindings.put(PlayerCommand.CAMERA_DOWN, new Key(CODED, DOWN));
@@ -96,9 +102,11 @@ class AltKeyboardMap extends KeyboardMap {
 public class MouseKeyboardControl extends Control {
   
   KeyboardMap keyMap;
+  boolean useMouse;
   
   public MouseKeyboardControl(KeyboardMap keyMap, boolean useMouse) {
     this.keyMap = keyMap;
+    this.useMouse = useMouse;
     appRoot.registerMethod("keyEvent", this);
     if (useMouse) {
       appRoot.registerMethod("mouseEvent", this);
@@ -144,6 +152,10 @@ public class MouseKeyboardControl extends Control {
          if (event.getAction() == KeyEvent.PRESS) moveStop = true;
          else if (event.getAction() == KeyEvent.RELEASE) moveStop = false;
          break;
+       case SHOOT:
+         if (event.getAction() == KeyEvent.PRESS) activateBlaster = true;
+         else if (event.getAction() == KeyEvent.RELEASE) activateBlaster = false;
+         break;
        case CAMERA_UP:
          if (event.getAction() == KeyEvent.PRESS) playerFocus.y = height/2 - cameraSensitivityOffset - 50;
          else if (event.getAction() == KeyEvent.RELEASE && playerFocus.y < height/2) playerFocus.y = height/2;
@@ -172,6 +184,11 @@ public class MouseKeyboardControl extends Control {
     }
   }
   
+  @Override
+   public void dispose() {
+     appRoot.unregisterMethod("keyEvent", this);
+     if (useMouse) appRoot.unregisterMethod("mouseEvent", this);
+   }  
 }
 
 
@@ -285,6 +302,11 @@ public class PoseControl extends Control {
     else  playerFocus.x = width/2;
   }
   
+  @Override
+   public void dispose() {
+     poseDetectionService.unregister(this);
+   } 
+  
 }
 
 
@@ -295,33 +317,34 @@ public class PoseDetectionService {
   private OscP5 oscP5;
   private OscProperties properties;
   
-  PoseControl[] subscribers ;
+  ArrayList<PoseControl> subscribers ;
   
   public PoseDetectionService() {
     properties = new OscProperties();
     properties.setDatagramSize(10000); 
     properties.setListeningPort(9527);
     oscP5 = new OscP5(this, properties);
-    subscribers = new PoseControl[0];
+    subscribers = new ArrayList();
     oscP5.plug(this,"parseData","/poses/xml");
   }
   
   public void register(PoseControl subscriber) {
-    PoseControl[] updatedSubscribers = new PoseControl[subscribers.length + 1];
-    System.arraycopy(subscribers, 0, updatedSubscribers, 0, subscribers.length);
-    updatedSubscribers[subscribers.length] = subscriber;
-    subscribers = updatedSubscribers;
+    subscribers.add(subscriber);
+  }
+  
+  public void unregister(PoseControl subscriber) {
+    subscribers.remove(subscriber);
   }
   
   public void parseData(String rawPoseData) {
     XML xmlPoseData = parseXML(rawPoseData);
     int detectedPoseNum = xmlPoseData.getInt("nPoses");
     
-    if(subscribers.length == 0 || detectedPoseNum < subscribers.length) return;
+    if(subscribers.size() == 0 || detectedPoseNum < subscribers.size()) return;
     
     XML[] poses = xmlPoseData.getChildren("pose");
-    for (int i = 0; i < subscribers.length; i++) {
-      subscribers[i].update(new Pose(poses[i]));
+    for (int i = 0; i < subscribers.size(); i++) {
+      subscribers.get(i).update(new Pose(poses[i]));
     }
   }
   

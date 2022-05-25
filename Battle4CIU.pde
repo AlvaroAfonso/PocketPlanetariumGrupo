@@ -49,23 +49,10 @@ void load() {
   solarSystemData = new World();
   
   poseDetectionService = new PoseDetectionService();
-  
-  if(nPosePlayers==0){
-    player1 = new Player("Player1", new MouseKeyboardControl(new MainKeyboardMap(), false), new PVector(20, 0, 50));
-    player2 = new Player("Player2", new MouseKeyboardControl(new AltKeyboardMap(), true), new PVector(-20, 0, 50));
-  } else if(nPosePlayers==1){
-    player1 = new Player("Player1", new PoseControl(poseDetectionService), new PVector(20, 0, 50));
-    player2 = new Player("Player2", new MouseKeyboardControl(new MainKeyboardMap(), false), new PVector(-20, 0, 50));
-  } else {
-    player1 = new Player("Player1", new PoseControl(poseDetectionService), new PVector(20, 0, 50));
-    player2 = new Player("Player2", new PoseControl(poseDetectionService), new PVector(-20, 0, 50));
-  }
-  
-  Player[] players = {player1, player2};
-  //Player[] players = {player1};
     
   synchronized(this) {
-    currentScene = new VersusMatchScene(new VersusMatchConfig(players, solarSystemData));
+    //currentScene = new VersusMatchScene(new VersusMatchConfig(players, solarSystemData));
+    currentScene = new MainMenu();
     println("Finished loading");
   }
 }
@@ -77,4 +64,9 @@ synchronized void draw() {
   
   currentScene.display();
   
+}
+
+public void switchScene(Scene newScene) {
+  currentScene.dispose();
+  currentScene = newScene;
 }
