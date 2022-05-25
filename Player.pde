@@ -302,41 +302,52 @@ class Bullet  implements Collisionable {
 
 class Blaster {
   
-  ArrayList<Bullet> bullets;
+  Bullet[] bullets;
+  Stack<Integer> freeBulletSpots;
   int maxBullets;
   
   int cooldown = 0;
   
   public Blaster(int maxBullets) {
-    bullets = new ArrayList();
     this.maxBullets = maxBullets;
+    bullets = new Bullet[maxBullets];
+    freeBulletSpots = new Stack();
+    for (int i = 0; i < maxBullets; i++) {
+      freeBulletSpots.push(i);
+    }
   }
   
   public void shoot(PVector position, PVector direction) {
-    if (bullets.size() < maxBullets && cooldown <= 0) {
-      bullets.add(new Bullet(position, direction));
+    if (freeBulletSpots.size() < maxBullets && cooldown <= 0) {
+      bullets[freeBulletSpots.pop()] = new Bullet(position, direction);
       cooldown = 30;
     }
   }
   
   public void update() {    
     cooldown = cooldown > 0 ? cooldown-1 : 0;
-    for (int i = 0; i < bullets.size(); i++) {
-      bullets.get(i).move();
-      if (bullets.get(i).timeout <= 0) bullets.remove(i);
+    for (int i = 0; i < bullets.length; i++) {
+      if (bullets[i] == null) continue;
+      bullets[i].move();
+      if (bullets[i].timeout <= 0) bullets[i] = null;
     }
   }
   
   public void trackPlayers(ArrayList<Player> players) {
     for (Bullet bullet : bullets) {
+      if (bullet == null) continue;
       bullet.trackPlayers(players);
     }
   }
   
   public HashMap<Integer,Integer> checkCollisions(List<Collisionable> bodies) {
+    
     HashMap<Integer, Integer> collidedBodiesCollisions = new HashMap();
     
-    for (Bullet bullet : bullets) {    
+    for (Bullet bullet : bullets) {   
+      
+      if (bullet == null) continue;
+      
       ArrayList<Integer> collidedBodiesIndexes = bullet.checkCollisions(bodies);
       
       for (Integer collidedBodyIndex : collidedBodiesIndexes) {
@@ -344,6 +355,7 @@ class Blaster {
         if (bodyCollisions == null) collidedBodiesCollisions.put(collidedBodyIndex, 1);
         else collidedBodiesCollisions.put(collidedBodyIndex, bodyCollisions + 1);
       }
+      
     }
     
     return collidedBodiesCollisions;
@@ -422,10 +434,9 @@ class BlasterModel {
   }
   
   public void display() {
-    for (Bullet bullet : blaster.bullets) {   
-      BulletModel matchingModel = bulletModels[blaster.bullets.indexOf(bullet)];
-      if (!matchingModel.isTracking) matchingModel.trackBullet(bullet);
-      if (matchingModel.isTracking) matchingModel.display();
+    for (int i = 0; i < blaster.maxBullets; i++) {   
+      if (!bulletModels[i].isTracking && blaster.bullets[i] != null) bulletModels[i].trackBullet(blaster.bullets[i]);
+      if (bulletModels[i].isTracking) bulletModels[i].display();
     }
   }
 }
