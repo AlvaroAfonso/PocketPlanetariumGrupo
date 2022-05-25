@@ -15,7 +15,7 @@ class Player {
   
   PVector position;
   
-  int countFrame = 0;
+  int countFrameSound, countFrameTail = 0;
   
   //Rotation orientation = new Rotation(0, 0, 0, 0, false);
   Rotation orientation = new Rotation();
@@ -28,7 +28,7 @@ class Player {
   float maxSpeed = 1000 * 300000; // X times the speed of light
   float engineAcceleration = 0.0025;
   
-  int[] spaceshipTail;
+  SpaceshipTailPoint[] spaceshipTail;
 
   
   public Player(String name, ControlScheme controlScheme, PVector startingPosition) {
@@ -36,9 +36,9 @@ class Player {
     this.controlScheme = controlScheme;
     this.position = startingPosition;
     soundsManager = new SoundsManager(papplet);
-    spaceshipTail = new int[5];
+    spaceshipTail = new SpaceshipTailPoint[5];
     for(int i = 0; i < spaceshipTail.length; i++){
-      spaceshipTail[i] = 0;
+      spaceshipTail[i] = new SpaceshipTailPoint(0,0,0,0);
     }
   }
   
@@ -47,24 +47,18 @@ class Player {
     move();
   }
   
-  private void move() {      
-    
-    //Space engine control
-    if(controlScheme.moveForward || controlScheme.moveBackward || controlScheme.moveLeft || controlScheme.moveRight || controlScheme.moveUp || controlScheme.moveDown || controlScheme.moveStop){
-      
-      for(int i = 0; i < spaceshipTail.length; i++){
-        
-      }
+  private void move() {    
+          
       
     if(controlScheme.moveForward || controlScheme.moveBackward || controlScheme.moveLeft || controlScheme.moveRight || controlScheme.moveUp || controlScheme.moveDown) {
-      if(countFrame == 0){
+      if(countFrameSound == 0){
       soundsManager.startSpaceshipEngine();
       }
-      countFrame++;
-      if(countFrame > 5) countFrame = 0;       
+      countFrameSound++;
+      if(countFrameSound > 5) countFrameSound = 0;       
     }else{
       soundsManager.stopSpaceshipEngine();
-      countFrame = 0;
+      countFrameSound = 0;
     }
     
     if (controlScheme.moveForward) {
@@ -108,7 +102,9 @@ class Player {
     }    
     
     position.add(speed);
-    }
+
+    updateTail();
+    
   }
   
   void updateOrientation() {  
@@ -148,23 +144,49 @@ class Player {
 
   }
   
-  /*class SpaceshipTailPoint{
-    int x,y,z,radius;
+  void updateTail(){
     
-    SpaceshipTailPoint(){
-      
+    if(speed.mag() == 0){
+      for(int i = 0; i < spaceshipTail.length; i++){
+        spaceshipTail[i] = new SpaceshipTailPoint(0,0,0,0);
+      }
+      return;
     }
-  }*/
+    
+    if(countFrameTail == 10){
+        for(int i = 1; i < spaceshipTail.length; i++){
+          spaceshipTail[i - 1] = spaceshipTail[i];
+          spaceshipTail[i - 1].radius -= 10;
+        } 
+     
+        spaceshipTail[spaceshipTail.length - 1] = new SpaceshipTailPoint(width/2.0 + position.x, height/2.0 + position.y + 0.1, position.z, 60);
+        countFrameTail = 0;
+    }else{
+        countFrameTail++;
+    }
+    
+  }
   
 }
 
-
+class SpaceshipTailPoint{
+    
+    float x,y,z,radius;
+    
+    SpaceshipTailPoint(float x, float y, float z,float radius){
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      this.radius = radius;
+    }
+    
+}
 
 class PlayerModel {
   
   PGraphics canvas;
   
-  PShape shape;
+  PShape tailPoint;
   
   PImage sprite; // Looking right by default
   Player player;
@@ -186,16 +208,29 @@ class PlayerModel {
       }   
     }
     */    
-    canvas.pushMatrix();    
-      canvas.translate(width/2.0 + player.position.x, height/2.0 + player.position.y, player.position.z);  
+    canvas.pushMatrix();
+    
+      //display de la estela
+      for(int i = 0; i < player.spaceshipTail.length - 1; i++){
+        canvas.pushMatrix();
+        if(player.spaceshipTail[i].radius > 0){
+          PShape tailPoint = createShape(SPHERE, player.spaceshipTail[i].radius);
+          tailPoint.setStroke(255);
+          canvas.translate(player.spaceshipTail[i].x, player.spaceshipTail[i].y, player.spaceshipTail[i].z);
+          canvas.scale(0.003);
+          canvas.shape(tailPoint);
+        }
+        canvas.popMatrix(); 
+      }
+      canvas.translate(width/2.0 + player.position.x, height/2.0 + player.position.y, player.position.z);
+     
+            
       canvas.pushMatrix();
 
         PMatrix billboardMatrix = generateBillboardMatrix(canvas.getMatrix());
         canvas.resetMatrix();
         canvas.applyMatrix(billboardMatrix);
-        
-        print(billboardMatrix);
-        
+                
         //float[] cameraRotations = cameraControl.camera.getRotations();
         //rotateX();
         canvas.pushStyle();
