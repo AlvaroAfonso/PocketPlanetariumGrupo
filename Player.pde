@@ -3,9 +3,11 @@
 *    1. PLAYER COMMANDS
 *    2. PLAYER 
 *    3. PLAYER MODEL
-*    4. BLASTER
-*    5. BLASTER MODEL
-*    6. TAIL 
+*    4. BULLET
+*    5. BLASTER
+*    6. BULLET MODEL
+*    7. BLASTER MODEL
+*    8. TAIL 
 */
 
 
@@ -27,6 +29,7 @@ enum PlayerCommand {
     CAMERA_LEFT,
     CAMERA_RIGHT
 }
+
 
 /*-------------------------------- 
 2. PLAYER
@@ -182,9 +185,16 @@ class PlayerModel {
     this.player = player;
     this.sprite = loadImage("./data/images/Spaceship.png");
     //imageMode(CENTER);
+    this.tail = new Tail(canvas, player.position, player.maxSpeed);
   }
   
-  void display() {         
+  void display() {  
+    
+    if (player.speed.mag() > 0 && innerProduct(player.speed, player.direction) > PI/2) {
+      tail.updateHead(PVector.sub(player.position, player.speed.copy().setMag(earthRadius)), player.speed);
+      tail.display();
+    }
+    
     canvas.pushMatrix();    
       canvas.translate(width/2.0 + player.position.x, height/2.0 + player.position.y, player.position.z);  
       canvas.pushMatrix();
@@ -208,13 +218,18 @@ class PlayerModel {
         canvas.popStyle();
       canvas.popMatrix();
     canvas.popMatrix();    
+    
+    if (player.speed.mag() > 0 && innerProduct(player.speed, player.direction) <= PI/2) {
+      tail.updateHead(PVector.sub(player.position, player.speed.copy().setMag(earthRadius)), player.speed);
+      tail.display();
+    }
   }
   
 }   
 
 
 /*-------------------------------- 
-4. BLASTER
+4. BULLET
 --------------------------------*/
 class Bullet  implements Collisionable {
   
@@ -299,7 +314,9 @@ class Bullet  implements Collisionable {
 }
 
 
-
+/*-------------------------------- 
+5. BLASTER
+--------------------------------*/
 class Blaster {
   
   Bullet[] bullets;
@@ -318,7 +335,7 @@ class Blaster {
   }
   
   public void shoot(PVector position, PVector direction) {
-    if (freeBulletSpots.size() < maxBullets && cooldown <= 0) {
+    if (freeBulletSpots.size() > 0 && cooldown <= 0) {
       bullets[freeBulletSpots.pop()] = new Bullet(position, direction);
       cooldown = 30;
     }
@@ -329,7 +346,10 @@ class Blaster {
     for (int i = 0; i < bullets.length; i++) {
       if (bullets[i] == null) continue;
       bullets[i].move();
-      if (bullets[i].timeout <= 0) bullets[i] = null;
+      if (bullets[i].timeout <= 0) {
+        bullets[i] = null;
+        freeBulletSpots.push(i);
+      }
     }
   }
   
@@ -365,7 +385,7 @@ class Blaster {
 
 
 /*-------------------------------- 
-5. BLASTER MODEL
+6. BULLET MODEL
 --------------------------------*/
 class BulletModel {
   
@@ -418,6 +438,9 @@ class BulletModel {
 }
 
 
+/*-------------------------------- 
+7. BLASTER MODEL
+--------------------------------*/
 class BlasterModel {
   Blaster blaster;
   
@@ -443,15 +466,83 @@ class BlasterModel {
 
 
 /*-------------------------------- 
-6. TAIL
+8. TAIL
 --------------------------------*/
 class Tail {
   
-  int[] particlesRadius;
-  
-  public Tail() {
-    particlesRadius = new int[5];
+  private class TailParticle {
+    
+    PGraphics canvas;
+    
+    float radius;
+    PVector position;
+    PShape particleMesh;
+    
+    float opacity;
+    int opacityFrames;
+      
+    public TailParticle(PGraphics canvas, float radius, PVector initialPosition, float opacity) {
+      this.canvas = canvas;
+      this.radius = radius;
+      this.position = initialPosition;
+      particleMesh = createShape(SPHERE, radius);
+      opacityFrames = 0;
+      this.opacity = opacity;
+    }
+    
+    public void update(PVector newPosition, float radius) {
+      position = newPosition;
+      if (radius != this.radius) {
+        this.radius = radius;
+        particleMesh = createShape(SPHERE, radius);
+      }
+    }
+    
+    public void display() {
+      canvas.pushMatrix();
+        canvas.translate(width/2.0 + position.x, height/2.0 + position.y, position.z);
+        canvas.scale(0.003);
+        if (opacity < 0.9 && opacityFrames == floor(opacity*15)) {
+          particleMesh.setFill(color(255, opacity*255));
+          opacityFrames = 0;
+        } else if (opacity < 0.9) {
+          particleMesh.setFill(color(255, 0));
+          opacityFrames++;
+        } else {
+          particleMesh.setFill(color(255, opacity*255));
+        }
+        canvas.shape(particleMesh);
+      canvas.popMatrix(); 
+    }
   }
   
+  PGraphics canvas;
+  TailParticle[] particles;
+  final float baseRadius = 60;
+  float maxSpeed; 
+  
+  int countFrameTail = 0;
+  
+  public Tail(PGraphics canvas, PVector initialPosition, float maxSpeed) {
+    this.canvas = canvas;
+    this.maxSpeed = maxSpeed;
+    particles = new TailParticle[5];
+    for(int i = 0; i < particles.length; i++){
+      particles[i] = new TailParticle(canvas, baseRadius / (i+1), initialPosition.copy(), 1.0 - 0.1*i);
+    }
+  }
+  
+  void updateHead(PVector newHeadPosition, PVector currentSpeed){
+    for(int i =  particles.length - 1; i >= 1; i--){
+      particles[i].update(particles[i-1].position.copy(), max((currentSpeed.mag()* 60 * DISTANCE_SCALE)/maxSpeed * baseRadius / (i+1), 0.1*baseRadius));
+    } 
+    particles[0].update(newHeadPosition.copy(), max((currentSpeed.mag()* 60 * DISTANCE_SCALE)/maxSpeed * baseRadius, 0.3*baseRadius)); 
+  }
+  
+  void display() {
+    for(int i = 1; i < particles.length; i++){
+      particles[i].display();
+    }
+  }
   
 }
