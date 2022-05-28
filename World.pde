@@ -215,11 +215,19 @@ class WorldModel {
   private final World worldData;
   private final PGraphics canvas;
   private final HashMap<String, PShape> astronomicalBodyMeshes;
+  
+  PShader sunShader;
+  PImage sunTexture;
     
   public WorldModel(PGraphics canvas, World worldData){
     this.canvas = canvas;
     this.worldData = worldData;
     this.astronomicalBodyMeshes = new HashMap();
+    sunShader = loadShader("shaders/sun_frag.glsl", "shaders/sun_vert.glsl");
+    sunTexture =  loadImage("./data/images/Sun.jpg");
+    sunShader.set("u_resolution", float(width), float(height));
+    sunShader.set("u_sun_texture", sunTexture);
+    sunShader.set( "time", time);
     
     generateAstronomicalBodyMesh(worldData.sun, "./data/images/Sun.jpg");
     
@@ -246,7 +254,7 @@ class WorldModel {
   
   private void generateAstronomicalBodyMesh(AstronomicalBody body, String texturePath) {
     PShape mesh = canvas.createShape(SPHERE, body.radius);
-    if (texturePath != null) {
+    if (texturePath != null && body.name != "Sun") {
       PImage texture = loadImage(texturePath);
       mesh.setTexture(texture);
     }
@@ -276,10 +284,15 @@ class WorldModel {
       canvas.rotateY(body.currentRotationAngle);
        
       if (body.name == "Sun") {
-        canvas.pushStyle();
-          canvas.noLights();
-          canvas.shape(astronomicalBodyMeshes.get(body.name));
-        canvas.popStyle();
+        sunShader.set("time", time / 1000);
+        canvas.shader(sunShader);
+        //canvas.pushStyle();
+          //canvas.noLights();
+          canvas.noStroke();
+          canvas.sphere(body.radius);
+          //canvas.shape(astronomicalBodyMeshes.get(body.name));
+        //canvas.popStyle();
+        canvas.resetShader();
       } else {
         // ----------------------------------------- Display
         canvas.shape(astronomicalBodyMeshes.get(body.name));
