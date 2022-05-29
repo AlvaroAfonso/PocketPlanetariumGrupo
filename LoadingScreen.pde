@@ -13,7 +13,7 @@ class LoadingScene extends Scene {
         canvas.translate(width/2.0 - 25, height/2.0);
         canvas.textSize(20);
         canvas.fill(255, 255.0 - opacity);
-        opacity += 2;
+        opacity += 4;
         if (opacity >= 255.0) opacity = 0.0;
         canvas.text("LOADING...", 0, 0);
         canvas.fill(255);

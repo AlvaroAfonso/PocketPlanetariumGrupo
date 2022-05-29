@@ -191,7 +191,7 @@ class PlayerModel {
   void display() {  
     
     if (player.speed.mag() > 0 && innerProduct(player.speed, player.direction) > PI/2) {
-      tail.updateHead(PVector.sub(player.position, player.speed.copy().setMag(earthRadius)), player.speed);
+      tail.updateHead(player.position, player.speed);
       tail.display();
     }
     
@@ -215,12 +215,15 @@ class PlayerModel {
           canvas.scale(0.001);
           //canvas.scale(0.05);
           canvas.image(sprite, 0, 0);
+          
         canvas.popStyle();
       canvas.popMatrix();
     canvas.popMatrix();    
     
+    canvas.pointLight(255, 255, 255, width/2.0, height/2.0, 0);
+    
     if (player.speed.mag() > 0 && innerProduct(player.speed, player.direction) <= PI/2) {
-      tail.updateHead(PVector.sub(player.position, player.speed.copy().setMag(earthRadius)), player.speed);
+      tail.updateHead(player.position, player.speed);
       tail.display();
     }
   }
@@ -473,17 +476,21 @@ class Tail {
   private class TailParticle {
     
     PGraphics canvas;
+    PShader toonShader;
     
     float radius;
+    float sizeScale;
     PVector position;
     PShape particleMesh;
     
     float opacity;
     int opacityFrames;
       
-    public TailParticle(PGraphics canvas, float radius, PVector initialPosition, float opacity) {
+    public TailParticle(PGraphics canvas, float radius, float sizeScale, PVector initialPosition, float opacity) {
       this.canvas = canvas;
+      toonShader = loadShader("shaders/toon_frag.glsl", "shaders/toon_vert.glsl");
       this.radius = radius;
+      this.sizeScale = sizeScale;
       this.position = initialPosition;
       particleMesh = createShape(SPHERE, radius);
       opacityFrames = 0;
@@ -501,46 +508,59 @@ class Tail {
     public void display() {
       canvas.pushMatrix();
         canvas.translate(width/2.0 + position.x, height/2.0 + position.y, position.z);
-        canvas.scale(0.003);
-        if (opacity < 0.9 && opacityFrames == floor(opacity*15)) {
-          particleMesh.setFill(color(255, opacity*255));
+        canvas.scale(sizeScale);
+        if (opacity < 1.0 && opacityFrames == floor(opacity*15) || opacity == 1.0) {
+          //particleMesh.setFill(color(255, opacity*255));
+          toonShader.set("opacity", opacity);
           opacityFrames = 0;
-        } else if (opacity < 0.9) {
-          particleMesh.setFill(color(255, 0));
+        } else if (opacity < 1.0) {
+          //particleMesh.setFill(color(255, 0));
+          toonShader.set("opacity", 0.0);
           opacityFrames++;
-        } else {
-          particleMesh.setFill(color(255, opacity*255));
         }
-        canvas.shape(particleMesh);
+        //canvas.shape(particleMesh);
+        canvas.pushStyle();
+          canvas.shader(toonShader);
+          canvas.sphere(radius);
+          canvas.resetShader();
+        canvas.popStyle();
       canvas.popMatrix(); 
     }
   }
   
   PGraphics canvas;
+  
   TailParticle[] particles;
-  final float baseRadius = 60;
+  final float baseRadius = 20;
+  final float baseScale = 0.003;
   float maxSpeed; 
   
   int countFrameTail = 0;
   
   public Tail(PGraphics canvas, PVector initialPosition, float maxSpeed) {
     this.canvas = canvas;
+    
     this.maxSpeed = maxSpeed;
-    particles = new TailParticle[5];
+    particles = new TailParticle[4];
     for(int i = 0; i < particles.length; i++){
-      particles[i] = new TailParticle(canvas, baseRadius / (i+1), initialPosition.copy(), 1.0 - 0.1*i);
+      particles[i] = new TailParticle(canvas, baseRadius / (i+1), baseScale, initialPosition.copy(), 1.0 - 0.1*i);
     }
   }
   
-  void updateHead(PVector newHeadPosition, PVector currentSpeed){
-    for(int i =  particles.length - 1; i >= 1; i--){
-      particles[i].update(particles[i-1].position.copy(), max((currentSpeed.mag()* 60 * DISTANCE_SCALE)/maxSpeed * baseRadius / (i+1), 0.1*baseRadius));
+  void updateHead(PVector playerPosition, PVector currentSpeed){
+    PVector newHeadPosition = PVector.sub(playerPosition, currentSpeed.copy().setMag(6*baseScale*baseRadius));
+    float newRadius = max( (60*currentSpeed.mag()*DISTANCE_SCALE) / maxSpeed * baseRadius, 0.4*baseRadius ) ;
+    particles[0].update( newHeadPosition, newRadius); 
+    for(int i = 1; i < particles.length; i++) {
+      particles[i].update(
+                          PVector.sub(particles[i-1].position, currentSpeed.copy().setMag(baseScale * (particles[i-1].radius + 2*newRadius))), 
+                          max(newRadius*pow(0.7, i), 0.1*baseRadius));
     } 
-    particles[0].update(newHeadPosition.copy(), max((currentSpeed.mag()* 60 * DISTANCE_SCALE)/maxSpeed * baseRadius, 0.3*baseRadius)); 
+    
   }
   
   void display() {
-    for(int i = 1; i < particles.length; i++){
+    for(int i = 0; i < particles.length; i++){
       particles[i].display();
     }
   }

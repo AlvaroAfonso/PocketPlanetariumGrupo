@@ -248,6 +248,7 @@ class WorldModel {
       if (displayData) {
         canvas.noLights();
         displayAstronomicalBodyData(worldData.sun);
+        canvas.pointLight(255, 255, 255, 0, 0, 0);
       }
     canvas.popMatrix();
   }
@@ -286,12 +287,12 @@ class WorldModel {
       if (body.name == "Sun") {
         sunShader.set("time", time / 1000);
         canvas.shader(sunShader);
-        //canvas.pushStyle();
+        canvas.pushStyle();
           //canvas.noLights();
           canvas.noStroke();
           canvas.sphere(body.radius);
           //canvas.shape(astronomicalBodyMeshes.get(body.name));
-        //canvas.popStyle();
+        canvas.popStyle();
         canvas.resetShader();
       } else {
         // ----------------------------------------- Display
