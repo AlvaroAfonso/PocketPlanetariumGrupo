@@ -11,7 +11,7 @@ public final int SECONDARY_FONT_COLOR = color(0, 0, 0, 255);
 
 
 public final int TITLE_SIZE = 40;
-public final float HEADING_SIZE = 0.6*TITLE_SIZE;
+public final float HEADING_SIZE = 0.5*TITLE_SIZE;
 public final float BODY_SIZE = 0.4*TITLE_SIZE;
 public final float DETAIL_SIZE = 0.3*TITLE_SIZE;
 public final float CALL_TO_ACTION_SIZE = 0.4*TITLE_SIZE;
@@ -82,7 +82,7 @@ class DraggableSlider extends Slider {
     }
     
     public void controlEvent(CallbackEvent event) {
-      if (event.getAction() == ControlP5.ACTION_DRAG) slider.valueChanged = true;
+      if (event.getAction() == ControlP5.ACTION_RELEASE) slider.valueChanged = true;
     }
   }
   

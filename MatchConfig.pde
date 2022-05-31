@@ -123,7 +123,13 @@ class ConfigMenu extends UIComponent {
                                    sliderWidth, sliderHeight, 
                                    new PVector(generalSettingsCard.getWidth()/2 - sliderWidth/2, 
                                                innerSectionPadding + playerSpeed.getHeight() + bulletSpeed.getHeight() + 2*innerSectionMargin),
-                                   1, 10, 10);   
+                                   1, 10, 10); 
+                                   
+    playerNum.setValue(config.players.size());
+    playerLives.setValue(config.playerLives);
+    playerSpeed.setValue(config.playerMaxSpeed);
+    bulletSpeed.setValue(config.bulletSpeed);
+    orbitSpeed.setValue(config.planetOrbitationSpeedUp);                                   
                                    
     playerNum.setGroup(generalSettingsCard);
     playerLives.setGroup(generalSettingsCard);
@@ -140,6 +146,41 @@ class ConfigMenu extends UIComponent {
     
     for (int i = 0; i < config.players.size(); i++) {      
       createPlayerConfigurationCard();
+    }
+  }
+  
+  private void addPlayer() {
+    ControllerID controllerID = controllerRepository.getAvailableControllers().get(0);
+    config.addPlayer(new Player("Player" + config.players.size() + 1, controllerRepository.fetchController(config.players.size(), controllerID), new PVector(20, 0, 50)));
+    
+    createPlayerConfigurationCard();
+  }
+  
+  private void removePlayer() {
+    int playerIndex = config.players.size() - 1;
+    Player lastPlayer = config.players.get(playerIndex);
+    controllerRepository.freeController(lastPlayer.controller);
+    config.removePlayer(lastPlayer);
+    
+    // CLEAR CARD
+    playerCardElements.remove(playerIndex);
+    playerCards.get(playerIndex).remove();
+    playerCards.remove(playerIndex);
+  }
+  
+  private void updateCards() {
+    playerCardWidth = (canvas.width - 2*padding - sectionMargin*(config.players.size() - 1)) / (config.players.size());
+    for (Group playerCard : playerCards) {
+      int cardIndex = playerCards.indexOf(playerCard);
+      
+      playerCard.setWidth(playerCardWidth);
+      playerCard.setPosition(padding + cardIndex*playerCardWidth + cardIndex*sectionMargin, 
+                           padding + generalSettingsCard.getBackgroundHeight() + sectionMargin);
+      
+      playerCardElements.get(cardIndex).get("Name").setWidth(playerCardWidth/3 - 2*innerSectionPadding);
+      playerCardElements.get(cardIndex).get("Controller").setWidth(playerCardWidth/2 - 2*innerSectionPadding);
+      
+      playerCard.update();
     }
   }
   
@@ -160,7 +201,8 @@ class ConfigMenu extends UIComponent {
     
     TypableTextField nameField = new TypableTextField(controlP5, "Player " + (cardIndex + 1) + " Name", 
                                               playerCardWidth/3 - 2*innerSectionPadding, 35,
-                                              new PVector(innerSectionPadding, innerSectionPadding));
+                                              new PVector(innerSectionPadding, innerSectionPadding));                                    
+    nameField.setValue(config.players.get(cardIndex).name);                                              
     
     ControllerSelector controllerSelector = new ControllerSelector(controlP5, "Player " + (cardIndex + 1) + " Controller",
                                               playerCardWidth/2 - 2*innerSectionPadding,
@@ -177,14 +219,20 @@ class ConfigMenu extends UIComponent {
   @Override
   public void renderContent() {
     // Match Settings
-    if (playerNum.changed()) {
-      // Add/Remove Players & Player Cards
+    if (playerNum.getValue() != config.players.size()) {
+      while(playerNum.getValue() != config.players.size()) {
+        println("Creating Del Cards");
+        if (playerNum.getValue() > config.players.size()) addPlayer();
+        if (playerNum.getValue() < config.players.size()) removePlayer();
+      }
+      updateCards();
     }
     if (playerLives.changed()) config.playerLives = (int) playerLives.getValue();
     if (playerSpeed.changed()) config.playerMaxSpeed = (int) playerSpeed.getValue();
     if (bulletSpeed.changed()) config.bulletSpeed = (int) bulletSpeed.getValue();
     if (orbitSpeed.changed()) config.planetOrbitationSpeedUp = (int) orbitSpeed.getValue();
     
+    println(config.playerLives + " " + config.playerMaxSpeed + " " + config.bulletSpeed + " " + config.planetOrbitationSpeedUp);
     
     // Player Cards
     ArrayList<ControllerSelector> controllerSelectors = new ArrayList();

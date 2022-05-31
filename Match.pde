@@ -45,6 +45,10 @@ public class VersusMatchConfig {
     players.add(newPlayer);
   }
   
+  public void removePlayer(Player playerToRemove) {
+    players.remove(playerToRemove);
+  }
+  
 }
 
 
