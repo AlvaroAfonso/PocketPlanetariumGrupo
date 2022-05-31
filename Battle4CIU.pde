@@ -28,16 +28,13 @@ PApplet appRoot = this;
 Scene currentScene;
 
 PoseDetectionService poseDetectionService;
-
-Player player1;
-Player player2;
+ControllerRepository controllerRepository;
 
 void setup() {
   fullScreen(P3D);
   //size(1800 ,1500 ,P3D) ;
   noStroke();
   currentScene = new LoadingScene();
-  nPosePlayers = 0;
   soundsManager = new SoundsManager();
   soundsManager.playBackgroundMusic();
   thread("load");
@@ -48,13 +45,20 @@ void load() {
   milkyWay.resize(displayWidth, displayHeight);
   solarSystemData = new World();
   
+  loadFonts();
+  
   poseDetectionService = new PoseDetectionService();
+  controllerRepository = new ControllerRepository();
     
   synchronized(this) {
-    //currentScene = new VersusMatchScene(new VersusMatchConfig(players, solarSystemData));
-    currentScene = new MainMenu();
+    switchScene(new MainMenu());
     println("Finished loading");
   }
+}
+
+public void switchScene(Scene newScene) {
+  currentScene.dispose();
+  currentScene = newScene;
 }
 
 synchronized void draw() {
@@ -64,9 +68,4 @@ synchronized void draw() {
   
   currentScene.display();
   
-}
-
-public void switchScene(Scene newScene) {
-  currentScene.dispose();
-  currentScene = newScene;
 }

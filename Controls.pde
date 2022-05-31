@@ -12,6 +12,106 @@ import oscP5.*;
 */
 
 
+
+/*-------------------------------- 
+1. GENERAL CONTROL
+--------------------------------*/
+enum ControllerID {
+  MAIN_MOUSE_KEYBOARD("Mouse & Keyboard [WASD]"),
+  ALT_MOUSE_KEYBOARD("Mouse & Keyboard [IJKL]"),
+  MAIN_KEYBOARD("Keyboard [WASD]"),
+  ALT_KEYBOARD("Keyboard [IJKL]"),
+  POSE_DETECTION("Pose Detection");
+  
+  private String name;
+  
+  private ControllerID(String name) {
+    this.name = name;
+  }
+}
+
+class ControllerRepository {
+  
+  private HashMap<ControllerID, Control> singletonControllers;
+  
+  private final boolean AVAILABLE = true;
+  private HashMap<ControllerID, Boolean> controllerAvailabilityMap;
+  
+  public ControllerRepository() {
+    singletonControllers = new HashMap();
+    singletonControllers.put(ControllerID.MAIN_MOUSE_KEYBOARD, new MouseKeyboardControl(new MainKeyboardMap(), true));
+    singletonControllers.put(ControllerID.ALT_MOUSE_KEYBOARD, new MouseKeyboardControl(new AltKeyboardMap(), true));
+    singletonControllers.put(ControllerID.MAIN_KEYBOARD, new MouseKeyboardControl(new MainKeyboardMap(), false));
+    singletonControllers.put(ControllerID.ALT_KEYBOARD, new MouseKeyboardControl(new AltKeyboardMap(), false));
+    
+    controllerAvailabilityMap = new HashMap();
+    controllerAvailabilityMap.put(ControllerID.MAIN_MOUSE_KEYBOARD, AVAILABLE);
+    controllerAvailabilityMap.put(ControllerID.ALT_MOUSE_KEYBOARD, AVAILABLE);
+    controllerAvailabilityMap.put(ControllerID.MAIN_KEYBOARD, AVAILABLE);
+    controllerAvailabilityMap.put(ControllerID.ALT_KEYBOARD, AVAILABLE);
+    controllerAvailabilityMap.put(ControllerID.POSE_DETECTION, AVAILABLE);
+  }
+  
+  public ArrayList<ControllerID> getAvailableControllers() {
+    ArrayList<ControllerID> availableControllers = new ArrayList(); 
+    for (ControllerID controller : controllerAvailabilityMap.keySet()) {
+      if (controllerAvailabilityMap.get(controller) == AVAILABLE) availableControllers.add(controller);
+    }
+    return availableControllers;
+  } 
+  
+  public Control fetchController(int requesterID, ControllerID targetController) {
+    Control controller = null;
+    
+    if (controllerAvailabilityMap.get(targetController) != AVAILABLE) return controller;
+    
+    if (targetController == ControllerID.POSE_DETECTION) {
+      controller = new PoseControl();
+      poseDetectionService.register((PoseControl) controller, requesterID);
+      return controller;
+    }
+    
+    controllerAvailabilityMap.put(targetController, !AVAILABLE);
+    return singletonControllers.get(targetController);
+  }
+  
+  public Control fetchController(int requesterID, String targetController) {
+    Control controller = null;
+    
+    for (ControllerID controllerID : controllerAvailabilityMap.keySet()) {
+      if (controllerAvailabilityMap.get(controllerID) == AVAILABLE && controllerID.name.equals(targetController)) {
+        if (controllerID == ControllerID.POSE_DETECTION) {
+          controller = new PoseControl();
+          poseDetectionService.register((PoseControl) controller, requesterID);
+          return controller;
+        }
+        controllerAvailabilityMap.put(controllerID, !AVAILABLE);
+        return singletonControllers.get(controllerID);
+      }  
+    }   
+    return controller;
+  }
+  
+  public String getControllerName(Control controller) {
+    if (controller.getClass() == PoseControl.class) return ControllerID.POSE_DETECTION.name;
+    for (ControllerID controllerID : singletonControllers.keySet()) {
+      if (singletonControllers.get(controllerID) == controller) return controllerID.name;
+    }
+    return "";
+  }
+  
+  public ArrayList<String> getAvailableControllerNames() {
+    ArrayList<String> availableControllerNames = new ArrayList(); 
+    for (ControllerID controller : controllerAvailabilityMap.keySet()) {
+      if (controllerAvailabilityMap.get(controller) == AVAILABLE) availableControllerNames.add(controller.name);
+    }
+    Collections.sort(availableControllerNames);
+    return availableControllerNames;
+  } 
+
+}
+
+
 /*-------------------------------- 
 1. GENERAL CONTROL
 --------------------------------*/
@@ -25,6 +125,8 @@ abstract class Control {
       this.y = y;
     }
   }
+  
+  private String name;
   
   // camera controls
   PlayerFocus playerFocus;
@@ -107,17 +209,17 @@ public class MouseKeyboardControl extends Control {
   public MouseKeyboardControl(KeyboardMap keyMap, boolean useMouse) {
     this.keyMap = keyMap;
     this.useMouse = useMouse;
-    appRoot.registerMethod("keyEvent", this);
     if (useMouse) {
-      appRoot.registerMethod("mouseEvent", this);
       playerFocus = new PlayerFocus(mouseX, mouseY);
       cameraSensitivity = 2;
       cameraSensitivityOffset = 150;
+      appRoot.registerMethod("mouseEvent", this);
     } else {
       playerFocus = new PlayerFocus(width/2, height/2);
       cameraSensitivity = 20;
       cameraSensitivityOffset = 0;
     }
+    appRoot.registerMethod("keyEvent", this);
   }
   
    public void keyEvent(KeyEvent event) {
@@ -251,8 +353,7 @@ public class PoseControl extends Control {
 
   private CommandDelayer latencyGen;
   
-  public PoseControl(PoseDetectionService poseDetectionService){
-    poseDetectionService.register(this);
+  public PoseControl() {
     PlayerCommand[] commands = {PlayerCommand.MOVE_FORWARD, PlayerCommand.MOVE_BACKWARD, PlayerCommand.MOVE_LEFT, PlayerCommand.MOVE_RIGHT};
     latencyGen = new CommandDelayer(commands, 4);
     cameraSensitivity = 3.5;
@@ -328,8 +429,8 @@ public class PoseDetectionService {
     oscP5.plug(this,"parseData","/poses/xml");
   }
   
-  public void register(PoseControl subscriber) {
-    subscribers.add(subscriber);
+  public void register(PoseControl subscriber, int subscriberID) {
+    subscribers.add(subscriberID, subscriber);
   }
   
   public void unregister(PoseControl subscriber) {
@@ -344,7 +445,7 @@ public class PoseDetectionService {
     
     XML[] poses = xmlPoseData.getChildren("pose");
     for (int i = 0; i < subscribers.size(); i++) {
-      subscribers.get(i).update(new Pose(poses[i]));
+      subscribers.get(i).update(new Pose(poses[poses.length - i - 1]));
     }
   }
   

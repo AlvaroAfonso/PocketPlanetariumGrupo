@@ -40,6 +40,7 @@ class Player implements Collisionable {
   public float engineAcceleration = 0.003;
 
   String name;
+  int id;
   Control controller;
   
   PVector spaceShipColor;
@@ -64,12 +65,16 @@ class Player implements Collisionable {
   
   Blaster blaster;
   
-  public Player(String name, Control controlScheme, PVector startingPosition) {
+  public Player(String name, Control controller, PVector startingPosition) {
     this.name = name;
-    this.controller = controlScheme;
+    this.controller = controller;
     this.position = startingPosition;
     this.hitbox = new HitBox(loadImage("./data/images/Spaceship.png"), 0.001, this.position);
     this.blaster = new Blaster(50);
+  }
+  
+  public void switchController(Control controller) {
+    this.controller = controller;
   }
   
   public void update() {

@@ -46,45 +46,33 @@ class Menu extends UIComponent {
   public Menu(int menuWidth, int menuHeight, PVector screenCoords, String title) {
     super(menuWidth, menuHeight, new PVector(screenCoords.x - menuWidth/2, screenCoords.y - menuHeight/2), Panel.DEFAULT_PRIORITY + 1000);
     controlP5 = new ControlP5(appRoot);
-    controlP5.setBackground(color(90, 90, 100, 180));
+    controlP5.setBackground(BG_COLOR);
     controlP5.setGraphics(this.canvas, (int) this.screenCoords.x, (int) this.screenCoords.y); 
     
     buttonWidth = canvas.width - 60;
     buttonHeight = 30;
     
-    int titleSize = 40;
     
     controlP5.addTextlabel("Title")
                     .setText(title)
-                    .setPosition(canvas.width/2 - titleSize * title.length()/4, 30)
-                    .setColorValue(color(255))
-                    .setFont(createFont("Arial", titleSize))
+                    .setPosition(canvas.width/2 - TITLE_SIZE * title.length()/4, 30)
+                    .setColorValue(PRIMARY_FONT_COLOR)
+                    .setFont(TITLE_FONT)
                     ;
-     playButton = new ClickableButton(controlP5);
+     playButton = new ClickableButton(controlP5, "Play");
      playButton.setPosition(canvas.width/2 - buttonWidth/2, canvas.height/2 - buttonHeight/2 + 30)
                .setSize((int) buttonWidth, (int) buttonHeight)
-               .setFont(createFont("Arial Bold", 0.4*titleSize, true))
+               .setFont(CALL_TO_ACTION_FONT)
+               .setColorBackground(SECONDARY_COLOR)
+               .setColorForeground(PRIMARY_COLOR)
+               .setColorActive(INTERACT_COLOR)
                ;
   }
 
    @Override
    protected void renderContent() {
-     if (!playButton.isClicked) return; 
-     if(nPosePlayers==0){
-        player1 = new Player("Player1", new MouseKeyboardControl(new MainKeyboardMap(), false), new PVector(20, 0, 50));
-        player2 = new Player("Player2", new MouseKeyboardControl(new AltKeyboardMap(), true), new PVector(-20, 0, 50));
-      } else if(nPosePlayers==1){
-        player1 = new Player("Player1", new PoseControl(poseDetectionService), new PVector(20, 0, 50));
-        player2 = new Player("Player2", new MouseKeyboardControl(new MainKeyboardMap(), false), new PVector(-20, 0, 50));
-      } else {
-        player1 = new Player("Player1", new PoseControl(poseDetectionService), new PVector(20, 0, 50));
-        player2 = new Player("Player2", new PoseControl(poseDetectionService), new PVector(-20, 0, 50));
-      }
-  
-     ArrayList<Player> players = new ArrayList();
-     players.add(player1);
-     players.add(player2);
-    switchScene(new VersusMatchScene(new VersusMatchConfig(players, solarSystemData)));
+     if (!playButton.wasClicked()) return;
+     switchScene(new VersusMatchConfigurationScene());
    }
    
    @Override
