@@ -62,8 +62,6 @@ public class VersusMatchScene extends Scene {
   
   public VersusMatchScene(VersusMatchConfig config) {
     super();    
-    
-    println(config.players.size() + " Lives: " + config.playerLives +  " P1 Control: " + config.players.get(0).controller.getClass() + " P2 Control: " + config.players.get(1).controller.getClass());
     this.players = config.players;
     this.worldData = config.worldData;
     

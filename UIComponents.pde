@@ -156,7 +156,7 @@ class TypableTextField extends Textfield {
     this.setColorForeground(SECONDARY_COLOR);
     this.setColorActive(INTERACT_COLOR);
     
-    //this.setFont(BODY_FONT);
+    this.setFont(BODY_FONT);
     
     this.setAutoClear(false);
     this.addCallback(handler);

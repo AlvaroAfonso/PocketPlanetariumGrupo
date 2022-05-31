@@ -58,7 +58,32 @@ class ControllerRepository {
   public ArrayList<ControllerID> getAvailableControllers() {
     ArrayList<ControllerID> availableControllers = new ArrayList(); 
     for (ControllerID controller : controllerAvailabilityMap.keySet()) {
-      if (controllerAvailabilityMap.get(controller) == AVAILABLE) availableControllers.add(controller);
+      if (controllerAvailabilityMap.get(controller) != AVAILABLE) continue;
+      switch (controller) {
+          case MAIN_MOUSE_KEYBOARD:
+            if (controllerAvailabilityMap.get(ControllerID.ALT_MOUSE_KEYBOARD) == AVAILABLE && controllerAvailabilityMap.get(ControllerID.MAIN_KEYBOARD) == AVAILABLE) {
+                  availableControllers.add(ControllerID.MAIN_MOUSE_KEYBOARD);
+            } 
+            break;
+          case ALT_MOUSE_KEYBOARD:
+            if (controllerAvailabilityMap.get(ControllerID.MAIN_MOUSE_KEYBOARD) == AVAILABLE && controllerAvailabilityMap.get(ControllerID.ALT_KEYBOARD) == AVAILABLE) {
+                  availableControllers.add(ControllerID.ALT_MOUSE_KEYBOARD);
+            }
+            break;
+          case MAIN_KEYBOARD:
+            if (controllerAvailabilityMap.get(ControllerID.MAIN_MOUSE_KEYBOARD) == AVAILABLE) {
+                  availableControllers.add(ControllerID.MAIN_KEYBOARD);
+            }
+            break;
+          case ALT_KEYBOARD:
+            if (controllerAvailabilityMap.get(ControllerID.ALT_MOUSE_KEYBOARD) == AVAILABLE) {
+                  availableControllers.add(ControllerID.MAIN_KEYBOARD);
+            }
+            break;
+          case POSE_DETECTION:
+            availableControllers.add(ControllerID.POSE_DETECTION);
+            break;
+        }
     }
     return availableControllers;
   } 

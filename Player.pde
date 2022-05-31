@@ -73,6 +73,18 @@ class Player implements Collisionable {
     this.blaster = new Blaster(50);
   }
   
+  public void setLives(int lives) {
+  
+  }
+  
+  public void setMaxSpeed(int maxSpeed) {
+  
+  }
+  
+  public void setBulletSpeed(int bulletSpeed) {
+  
+  }
+  
   public void switchController(Control controller) {
     this.controller = controller;
   }

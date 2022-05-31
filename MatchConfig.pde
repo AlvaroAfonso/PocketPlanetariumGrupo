@@ -151,7 +151,7 @@ class ConfigMenu extends UIComponent {
   
   private void addPlayer() {
     ControllerID controllerID = controllerRepository.getAvailableControllers().get(0);
-    config.addPlayer(new Player("Player" + config.players.size() + 1, controllerRepository.fetchController(config.players.size(), controllerID), new PVector(20, 0, 50)));
+    config.addPlayer(new Player("Player" + (config.players.size() + 1), controllerRepository.fetchController(config.players.size(), controllerID), new PVector(20, 0, 50)));
     
     createPlayerConfigurationCard();
   }

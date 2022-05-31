@@ -11,7 +11,7 @@ class LoadingScene extends Scene {
       @Override
       protected void renderContent() {
         canvas.background(0);
-        canvas.translate(width/2.0 - TITLE_SIZE * loadingText.length()/3, height/2.0);
+        canvas.translate(width/2.0 - TITLE_SIZE * loadingText.length()/3.5, height/2.0);
         canvas.textSize(TITLE_SIZE);
         canvas.fill(255, 255.0 - opacity);
         opacity += 3;
