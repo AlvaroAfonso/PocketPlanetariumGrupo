@@ -32,17 +32,20 @@ enum ControllerID {
 
 class ControllerRepository {
   
-  private HashMap<ControllerID, Control> singletonControllers;
+  private HashMap<ControllerID, Control> keyboardControllers;
+  private ArrayList<Control> poseControllers;
   
   private final boolean AVAILABLE = true;
   private HashMap<ControllerID, Boolean> controllerAvailabilityMap;
   
   public ControllerRepository() {
-    singletonControllers = new HashMap();
-    singletonControllers.put(ControllerID.MAIN_MOUSE_KEYBOARD, new MouseKeyboardControl(new MainKeyboardMap(), true));
-    singletonControllers.put(ControllerID.ALT_MOUSE_KEYBOARD, new MouseKeyboardControl(new AltKeyboardMap(), true));
-    singletonControllers.put(ControllerID.MAIN_KEYBOARD, new MouseKeyboardControl(new MainKeyboardMap(), false));
-    singletonControllers.put(ControllerID.ALT_KEYBOARD, new MouseKeyboardControl(new AltKeyboardMap(), false));
+    keyboardControllers = new HashMap();
+    keyboardControllers.put(ControllerID.MAIN_MOUSE_KEYBOARD, new MouseKeyboardControl(new MainKeyboardMap(), true));
+    keyboardControllers.put(ControllerID.ALT_MOUSE_KEYBOARD, new MouseKeyboardControl(new AltKeyboardMap(), true));
+    keyboardControllers.put(ControllerID.MAIN_KEYBOARD, new MouseKeyboardControl(new MainKeyboardMap(), false));
+    keyboardControllers.put(ControllerID.ALT_KEYBOARD, new MouseKeyboardControl(new AltKeyboardMap(), false));
+    
+    poseControllers = new ArrayList();
     
     controllerAvailabilityMap = new HashMap();
     controllerAvailabilityMap.put(ControllerID.MAIN_MOUSE_KEYBOARD, AVAILABLE);
@@ -68,43 +71,118 @@ class ControllerRepository {
     if (targetController == ControllerID.POSE_DETECTION) {
       controller = new PoseControl();
       poseDetectionService.register((PoseControl) controller, requesterID);
+      poseControllers.add(controller);
       return controller;
     }
     
     controllerAvailabilityMap.put(targetController, !AVAILABLE);
-    return singletonControllers.get(targetController);
+    
+    return keyboardControllers.get(targetController);
   }
   
-  public Control fetchController(int requesterID, String targetController) {
+  public Control fetchController(int requesterID, String targetControllerName) {
     Control controller = null;
     
     for (ControllerID controllerID : controllerAvailabilityMap.keySet()) {
-      if (controllerAvailabilityMap.get(controllerID) == AVAILABLE && controllerID.name.equals(targetController)) {
+      if (controllerAvailabilityMap.get(controllerID) == AVAILABLE && controllerID.name.equals(targetControllerName)) {
+        
         if (controllerID == ControllerID.POSE_DETECTION) {
           controller = new PoseControl();
           poseDetectionService.register((PoseControl) controller, requesterID);
+          poseControllers.add(controller);
           return controller;
         }
+        
         controllerAvailabilityMap.put(controllerID, !AVAILABLE);
-        return singletonControllers.get(controllerID);
+        
+        return keyboardControllers.get(controllerID);
       }  
     }   
     return controller;
   }
   
+  public void freeController(Control targetController) {
+    for (Control controller : poseControllers) {
+      if (controller == targetController) {
+        poseDetectionService.unregister((PoseControl) targetController);
+        poseControllers.remove(targetController);
+        return;
+      }
+    }
+    for (ControllerID controllerID : keyboardControllers.keySet()) {
+      if (keyboardControllers.get(controllerID) == targetController) {
+        controllerAvailabilityMap.put(controllerID, AVAILABLE);
+      }
+    }
+  }
+  
   public String getControllerName(Control controller) {
     if (controller.getClass() == PoseControl.class) return ControllerID.POSE_DETECTION.name;
-    for (ControllerID controllerID : singletonControllers.keySet()) {
-      if (singletonControllers.get(controllerID) == controller) return controllerID.name;
+    for (ControllerID controllerID : keyboardControllers.keySet()) {
+      if (keyboardControllers.get(controllerID) == controller) return controllerID.name;
     }
     return "";
   }
   
-  public ArrayList<String> getAvailableControllerNames() {
+  public ArrayList<String> getAvailableControllerNames(String selectedController) {
     ArrayList<String> availableControllerNames = new ArrayList(); 
     for (ControllerID controller : controllerAvailabilityMap.keySet()) {
-      if (controllerAvailabilityMap.get(controller) == AVAILABLE) availableControllerNames.add(controller.name);
+      
+      if (controller.name.equals(selectedController)) {        
+        switch (controller) {
+          case MAIN_MOUSE_KEYBOARD:
+            availableControllerNames.add(ControllerID.MAIN_KEYBOARD.name);
+            if (controllerAvailabilityMap.get(ControllerID.ALT_MOUSE_KEYBOARD) == AVAILABLE && controllerAvailabilityMap.get(ControllerID.ALT_KEYBOARD) == AVAILABLE) {
+                  availableControllerNames.add(ControllerID.ALT_MOUSE_KEYBOARD.name);
+                  availableControllerNames.add(ControllerID.ALT_KEYBOARD.name);
+            } 
+            break;
+          case ALT_MOUSE_KEYBOARD:
+            availableControllerNames.add(ControllerID.ALT_KEYBOARD.name);
+            if (controllerAvailabilityMap.get(ControllerID.MAIN_MOUSE_KEYBOARD) == AVAILABLE && controllerAvailabilityMap.get(ControllerID.MAIN_KEYBOARD) == AVAILABLE) {
+                  availableControllerNames.add(ControllerID.MAIN_MOUSE_KEYBOARD.name);
+                  availableControllerNames.add(ControllerID.MAIN_KEYBOARD.name);
+            }
+            break;
+          case MAIN_KEYBOARD:
+            if (controllerAvailabilityMap.get(ControllerID.MAIN_MOUSE_KEYBOARD) == AVAILABLE && controllerAvailabilityMap.get(ControllerID.ALT_MOUSE_KEYBOARD) == AVAILABLE) {
+              availableControllerNames.add(ControllerID.MAIN_MOUSE_KEYBOARD.name);
+            }
+            if (controllerAvailabilityMap.get(ControllerID.ALT_MOUSE_KEYBOARD) == AVAILABLE && controllerAvailabilityMap.get(ControllerID.ALT_KEYBOARD) == AVAILABLE) {
+                  availableControllerNames.add(ControllerID.ALT_MOUSE_KEYBOARD.name);
+                  availableControllerNames.add(ControllerID.ALT_KEYBOARD.name);
+            }
+            break;
+          case ALT_KEYBOARD:
+            if (controllerAvailabilityMap.get(ControllerID.ALT_MOUSE_KEYBOARD) == AVAILABLE && controllerAvailabilityMap.get(ControllerID.MAIN_MOUSE_KEYBOARD) == AVAILABLE) {
+              availableControllerNames.add(ControllerID.ALT_MOUSE_KEYBOARD.name);
+            }
+            if (controllerAvailabilityMap.get(ControllerID.MAIN_MOUSE_KEYBOARD) == AVAILABLE && controllerAvailabilityMap.get(ControllerID.MAIN_KEYBOARD) == AVAILABLE) {
+              availableControllerNames.add(ControllerID.MAIN_MOUSE_KEYBOARD.name);
+              availableControllerNames.add(ControllerID.MAIN_KEYBOARD.name);
+            }
+            break;
+          case POSE_DETECTION:
+            if (controllerAvailabilityMap.get(ControllerID.MAIN_MOUSE_KEYBOARD) == AVAILABLE
+                && controllerAvailabilityMap.get(ControllerID.ALT_MOUSE_KEYBOARD) == AVAILABLE
+                && controllerAvailabilityMap.get(ControllerID.MAIN_KEYBOARD) == AVAILABLE) availableControllerNames.add(ControllerID.MAIN_MOUSE_KEYBOARD.name);
+                
+            if (controllerAvailabilityMap.get(ControllerID.ALT_MOUSE_KEYBOARD) == AVAILABLE
+                && controllerAvailabilityMap.get(ControllerID.MAIN_MOUSE_KEYBOARD) == AVAILABLE
+                && controllerAvailabilityMap.get(ControllerID.ALT_KEYBOARD) == AVAILABLE) availableControllerNames.add(ControllerID.ALT_MOUSE_KEYBOARD.name);
+                
+            if (controllerAvailabilityMap.get(ControllerID.MAIN_KEYBOARD) == AVAILABLE
+                && controllerAvailabilityMap.get(ControllerID.MAIN_MOUSE_KEYBOARD) == AVAILABLE) availableControllerNames.add(ControllerID.MAIN_KEYBOARD.name);
+                
+            if (controllerAvailabilityMap.get(ControllerID.ALT_KEYBOARD) == AVAILABLE
+                && controllerAvailabilityMap.get(ControllerID.ALT_MOUSE_KEYBOARD) == AVAILABLE) availableControllerNames.add(ControllerID.ALT_KEYBOARD.name);
+            break;
+        }
+      }
     }
+    
+    if (!selectedController.equals(ControllerID.POSE_DETECTION.name)) availableControllerNames.add(ControllerID.POSE_DETECTION.name);
+    
     Collections.sort(availableControllerNames);
     return availableControllerNames;
   } 
@@ -418,34 +496,42 @@ public class PoseDetectionService {
   private OscP5 oscP5;
   private OscProperties properties;
   
-  ArrayList<PoseControl> subscribers ;
+  PoseControl[] subscribers ;
+  int activeSubs;
   
   public PoseDetectionService() {
     properties = new OscProperties();
     properties.setDatagramSize(10000); 
     properties.setListeningPort(9527);
     oscP5 = new OscP5(this, properties);
-    subscribers = new ArrayList();
+    subscribers = new PoseControl[4];
+    activeSubs = 0;
     oscP5.plug(this,"parseData","/poses/xml");
   }
   
   public void register(PoseControl subscriber, int subscriberID) {
-    subscribers.add(subscriberID, subscriber);
+    subscribers[subscriberID] = subscriber;
+    activeSubs++;
   }
   
   public void unregister(PoseControl subscriber) {
-    subscribers.remove(subscriber);
+    for (int i  = 0; i < subscribers.length; i++ ) {
+      if (subscribers[i] == subscriber) {
+        subscribers[i] = null;
+        activeSubs--;
+      }
+    }
   }
   
   public void parseData(String rawPoseData) {
     XML xmlPoseData = parseXML(rawPoseData);
     int detectedPoseNum = xmlPoseData.getInt("nPoses");
     
-    if(subscribers.size() == 0 || detectedPoseNum < subscribers.size()) return;
+    if(activeSubs == 0 || detectedPoseNum < activeSubs) return;
     
     XML[] poses = xmlPoseData.getChildren("pose");
-    for (int i = 0; i < subscribers.size(); i++) {
-      subscribers.get(i).update(new Pose(poses[poses.length - i - 1]));
+    for (int i = 0; i < subscribers.length; i++) {
+      if (subscribers[i] != null) subscribers[i].update(new Pose(poses[poses.length - i - 1]));
     }
   }
   

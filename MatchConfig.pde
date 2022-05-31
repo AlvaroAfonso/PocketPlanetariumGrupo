@@ -165,18 +165,7 @@ class ConfigMenu extends UIComponent {
     ControllerSelector controllerSelector = new ControllerSelector(controlP5, "Player " + (cardIndex + 1) + " Controller",
                                               playerCardWidth/2 - 2*innerSectionPadding,
                                               new PVector(innerSectionPadding, innerSectionPadding + nameField.getHeight() + innerSectionMargin),
-                                              cardIndex, controllerRepository.getControllerName(config.players.get(cardIndex).controller));
-    //controllerSelector.setSize(playerCardWidth/3 - 2*innerSectionPadding, 40);
-    //controllerSelector.setPosition(innerSectionPadding, innerSectionPadding + nameField.getHeight() + innerSectionMargin);
-    //controllerSelector.setBarHeight(35);
-    //controllerSelector.setItemHeight(35);
-    //controllerSelector.setCaptionLabel(controllerRepository.getControllerName(config.players.get(cardIndex).controller));
-    //controllerSelector.addItems(controllerRepository.getAvailableControllerNames());
-    //controllerSelector.addCallback(new CallbackListener() {
-    //  public void controlEvent(CallbackEvent event) {
-    //    println("event from controller : " + event.getController().getValue()+" from "+event.getController());
-    //  }
-    //});
+                                              cardIndex, config.players.get(cardIndex));
                                                                                                      
     nameField.setGroup(playerCard);
     controllerSelector.setGroup(playerCard);   
@@ -187,7 +176,38 @@ class ConfigMenu extends UIComponent {
   
   @Override
   public void renderContent() {
-    //switchScene(new VersusMatchScene(new VersusMatchConfig(players, solarSystemData)));
+    // Match Settings
+    if (playerNum.changed()) {
+      // Add/Remove Players & Player Cards
+    }
+    if (playerLives.changed()) config.playerLives = (int) playerLives.getValue();
+    if (playerSpeed.changed()) config.playerMaxSpeed = (int) playerSpeed.getValue();
+    if (bulletSpeed.changed()) config.bulletSpeed = (int) bulletSpeed.getValue();
+    if (orbitSpeed.changed()) config.planetOrbitationSpeedUp = (int) orbitSpeed.getValue();
+    
+    
+    // Player Cards
+    ArrayList<ControllerSelector> controllerSelectors = new ArrayList();
+    boolean aNewControllerWasSelected = false;
+    for (Group playerCard : playerCards) {
+      int playerCardIndex = playerCards.indexOf(playerCard);
+      
+      ControllerSelector controllerSelector = (ControllerSelector) playerCardElements.get(playerCardIndex).get("Controller");
+      TypableTextField nameField = (TypableTextField) playerCardElements.get(playerCardIndex).get("Name");
+      
+      controllerSelectors.add(controllerSelector);
+      if (controllerSelector.newControllerWasSelected()) aNewControllerWasSelected = true;
+      
+      if (nameField.changed()) config.players.get(playerCardIndex).name = nameField.getText();
+    }
+    if (aNewControllerWasSelected) {
+      for (ControllerSelector controllerSelector : controllerSelectors) {
+        controllerSelector.updateAvailableControllers();
+      }
+    }
+    
+    // Start Game
+    if (playButton.wasClicked()) switchScene(new VersusMatchScene(config));
   }
   
    @Override

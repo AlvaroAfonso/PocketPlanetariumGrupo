@@ -430,8 +430,8 @@ class BulletModel {
       canvas.translate(width/2.0 + trackedBullet.position.x, height/2.0 + trackedBullet.position.y, trackedBullet.position.z);
       canvas.pushStyle();
         bulletMesh.setFill(color(0, 240, 255));
-        bulletMesh.setStroke(0);
-        //canvas.sphere(earthRadius);
+        bulletMesh.setStroke(true);
+        bulletMesh.setStroke(color(0, 0, 0));
         if (trackedBullet.exploded) displayExplodingAnimation();
         else canvas.shape(bulletMesh);
       canvas.popStyle();
@@ -465,10 +465,12 @@ class BlasterModel {
   }
   
   public void display() {
+    canvas.noLights();
     for (int i = 0; i < blaster.maxBullets; i++) {   
       if (!bulletModels[i].isTracking && blaster.bullets[i] != null) bulletModels[i].trackBullet(blaster.bullets[i]);
       if (bulletModels[i].isTracking) bulletModels[i].display();
     }
+    canvas.pointLight(255, 255, 255, width/2.0, height/2.0, 0);
   }
 }
 

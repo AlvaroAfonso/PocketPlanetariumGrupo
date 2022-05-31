@@ -11,20 +11,23 @@ public final int SECONDARY_FONT_COLOR = color(0, 0, 0, 255);
 
 
 public final int TITLE_SIZE = 40;
-public final float HEADING_SIZE = 0.5*TITLE_SIZE;
-public final float BODY_SIZE = 0.3*TITLE_SIZE;
+public final float HEADING_SIZE = 0.6*TITLE_SIZE;
+public final float BODY_SIZE = 0.4*TITLE_SIZE;
+public final float DETAIL_SIZE = 0.3*TITLE_SIZE;
 public final float CALL_TO_ACTION_SIZE = 0.4*TITLE_SIZE;
 
 public PFont TITLE_FONT;
 public PFont HEADING_FONT;
 public PFont BODY_FONT;
+public PFont DETAIL_FONT;
 public PFont CALL_TO_ACTION_FONT;
 
 
 public void loadFonts() {
   TITLE_FONT = createFont("Arial Bold", TITLE_SIZE, true);
   HEADING_FONT = createFont("Arial Bold", HEADING_SIZE, true);
-  BODY_FONT = createFont("Arial Bold", HEADING_SIZE, true);
+  BODY_FONT = createFont("Arial Bold", BODY_SIZE, true);
+  BODY_FONT = createFont("Arial Bold", DETAIL_SIZE, true);
   CALL_TO_ACTION_FONT = createFont("Arial Bold", CALL_TO_ACTION_SIZE, true);
 }
 
@@ -153,7 +156,7 @@ class TypableTextField extends Textfield {
     this.setColorForeground(SECONDARY_COLOR);
     this.setColorActive(INTERACT_COLOR);
     
-    this.setFont(BODY_FONT);
+    //this.setFont(BODY_FONT);
     
     this.setAutoClear(false);
     this.addCallback(handler);
@@ -180,24 +183,27 @@ class ControllerSelector extends ScrollableList {
     }
     
     public void controlEvent(CallbackEvent event) {
-      
-      println("event from controller : "+event.getController().getValue()+" from "+event.getController());
-      /*
-      if (event.getAction() == ControlP5.ACTION_PRESS) {
-        controllerRepository.free(selectedController);
-        controllerRepository.fetchController(playerID, selectedController);
+      //println(event.getAction() + " " + selector.getCaptionLabel().getText());
+      //println("event " + event.getAction() + " from controller : " + event.getController().getValue() + " from "+event.getController());
+
+      if (event.getAction() == ControlP5.ACTION_RELEASE) {
+        controllerRepository.freeController(player.controller);
+        selectedController = selector.getCaptionLabel().getText();
+        player.controller = controllerRepository.fetchController(playerID, selectedController);
         selector.setCaptionLabel(selectedController);
-        selector.setItems(controllerRepository.getAvailableControllerNames());
+        updateAvailableControllers();
+        newControllerSelected = true;
       }
-      */
     }
   }
   
   private CallbackListener handler = new ControllerSelectorHandler(this); 
   private int playerID;
+  private Player player;
   private String selectedController;
+  private boolean newControllerSelected;
   
-  public ControllerSelector(ControlP5 controlP5, String name, int selectorWidth, PVector position, int playerID, String selectedController) {
+  public ControllerSelector(ControlP5 controlP5, String name, int selectorWidth, PVector position, int playerID, Player player) {
     super(controlP5, name);
     this.setPosition(position.x, position.y);
     
@@ -207,16 +213,33 @@ class ControllerSelector extends ScrollableList {
     this.setFont(BODY_FONT);
     
     this.playerID = playerID;
-    this.selectedController = selectedController;
-    
+    this.player = player;
+    this.selectedController = controllerRepository.getControllerName(player.controller);
+    newControllerSelected = false;
+    updateAvailableControllers();
     this.setCaptionLabel(selectedController);
-    this.setItems(controllerRepository.getAvailableControllerNames());
     
-    this.setSize(selectorWidth, this.getItems().size() * 35);
+    
+    println(controllerRepository.getAvailableControllerNames(selectedController));
+    
+    this.setSize(selectorWidth, 100);
     this.setBarHeight(35);
-    this.setItemHeight(35);
+    this.setItemHeight(20);
     
     this.setOpen(false);
+    this.addCallback(handler);
+  }
+  
+  public boolean newControllerWasSelected() {
+    if (newControllerSelected) {
+      newControllerSelected = false;
+      return true;
+    }
+    return false;
+  }
+  
+  public void updateAvailableControllers() {
+    this.setItems(controllerRepository.getAvailableControllerNames(selectedController));
   }
   
 }
