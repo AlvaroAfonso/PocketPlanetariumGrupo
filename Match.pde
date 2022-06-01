@@ -49,6 +49,7 @@ public class VersusMatchConfig {
   }
   
   public void removePlayer(Player playerToRemove) {
+    controllerRepository.freeController(playerToRemove.controller);
     players.remove(playerToRemove);
   }
   

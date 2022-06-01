@@ -9,13 +9,86 @@
 */
 
 
-class MatchConfigurationScene extends Scene {
+public class MatchConfigurationScene extends Scene {
+  
+  ConfigMenu menu = new ConfigMenu(this, width, height, new PVector(0,0), Panel.DEFAULT_PRIORITY + 1);
+  ArrayList<PlayerSpriteViewport> spriteViewports = new ArrayList(); 
 
   public MatchConfigurationScene() {
     panels.add(new MenuBackground());
-    panels.add(new ConfigMenu(this, width, height, new PVector(0,0), Panel.DEFAULT_PRIORITY + 1));
+    panels.add(menu);
+    
+    appRoot.registerMethod("draw", this);
+  }
+  
+  public void draw() {
+    if (menu.playerCards.size() != spriteViewports.size()) {
+      while (menu.playerCards.size() != spriteViewports.size()) {
+        if (menu.playerCards.size() > spriteViewports.size()) {
+          int cardIndex = menu.config.players.size()-1;
+          PlayerSpriteViewport spriteViewport = new PlayerSpriteViewport(menu.config.players.get(menu.config.players.size() - (menu.config.players.size() - spriteViewports.size())),
+                                                                         menu.playerCardWidth / 4, menu.playerCardWidth / 4,
+                                                                         new PVector(menu.padding + cardIndex * menu.playerCardWidth + cardIndex * menu.sectionMargin + menu.playerCardWidth - menu.innerSectionPadding - menu.playerCardWidth/4, 
+                                                                                     menu.padding + menu.generalSettingsCard.getBackgroundHeight() + menu.sectionMargin), 
+                                                                         menu.priority + 1);
+          spriteViewports.add(spriteViewport);
+        } else if (menu.playerCards.size() < spriteViewports.size()) {
+          PlayerSpriteViewport spriteViewportToRemove = spriteViewports.get(spriteViewports.size() - 1);
+          spriteViewports.remove(spriteViewportToRemove);
+        }
+      }
+      
+      for (PlayerSpriteViewport spriteViewport : spriteViewports) {
+        int cardIndex = spriteViewports.indexOf(spriteViewport);
+        spriteViewport.resize(menu.playerCardWidth / 4, menu.playerCardWidth / 4);
+        spriteViewport.screenCoords = new PVector(menu.padding + cardIndex * menu.playerCardWidth + cardIndex * menu.sectionMargin + menu.playerCardWidth - menu.innerSectionPadding - menu.playerCardWidth/4, 
+                                                  menu.padding + menu.generalSettingsCard.getBackgroundHeight() + menu.sectionMargin);
+      }
+    }
+    
+    for (PlayerSpriteViewport spriteViewport : spriteViewports) {
+      spriteViewport.display();
+    }
+  }
+  
+  @Override
+  public void dispose() {
+    appRoot.unregisterMethod("draw", this);
+    for (Panel panel : panels) {
+      panel.dispose();      
+    }
   }
 
+}
+
+class PlayerSpriteViewport extends Viewport {
+  
+  Player player;
+  
+  public PlayerSpriteViewport(Player player,int viewportWidth, int viewportHeight, PVector screenCoords, int priority) {
+    super(viewportWidth, viewportHeight, screenCoords, priority);
+    this.player = player;
+  }
+  
+  @Override
+  protected void renderContent() {
+    canvas.imageMode(CENTER);
+    canvas.translate(canvas.width/2, canvas.height/2);
+    canvas.pushMatrix();
+      canvas.rotateY(0.6 * frameCount/60);
+      canvas.background(BG_COLOR);
+      canvas.pushStyle();
+        canvas.scale((float) canvas.width / (float) player.sprite.width);
+        if (player.spriteColor != null) canvas.tint(player.spriteColor);
+        canvas.image(player.sprite, 0, 0);
+      canvas.popStyle();
+    canvas.popMatrix();
+  }
+  
+  @Override
+  public void dispose() {
+  
+  }
 }
 
 
@@ -156,6 +229,7 @@ class ConfigMenu extends UIComponent {
   }
   
   private void addPlayer() {
+    println(controllerRepository.getAvailableControllers());
     ControllerID controllerID = controllerRepository.getAvailableControllers().get(0);
     config.addPlayer(new Player("Player" + (config.players.size() + 1), config.players.size(), controllerRepository.fetchController(config.players.size(), controllerID), new PVector(random(-40, 4), 0, random(40, 50))));
     
@@ -209,17 +283,22 @@ class ConfigMenu extends UIComponent {
     TypableTextField nameField = new TypableTextField(controlP5, "Player " + (cardIndex + 1) + " Name", 
                                               playerCardWidth/3 - 2*innerSectionPadding, 35,
                                               new PVector(innerSectionPadding, innerSectionPadding));                                    
-    nameField.setValue(config.players.get(cardIndex).name);                                              
+    nameField.setValue(config.players.get(cardIndex).name);   
+    
+    ColorPicker colorPicker = new ColorPicker(controlP5, "Player " + (cardIndex + 1) + " Color");
+    colorPicker.setPosition(innerSectionPadding, innerSectionPadding + nameField.getHeight() + innerSectionMargin);
+    if (cardIndex > 0) colorPicker.setColorValue(color(random(255), random(255), random(255), 255));
+    else colorPicker.setColorValue(color(0, 0, 0, 0));
     
     ControllerSelector controllerSelector = new ControllerSelector(controlP5, "Player " + (cardIndex + 1) + " Controller",
                                               (int)(playerCardWidth/1.5) - 2*innerSectionPadding,
-                                              new PVector(innerSectionPadding, innerSectionPadding + nameField.getHeight() + innerSectionMargin),
+                                              new PVector(innerSectionPadding, innerSectionPadding + nameField.getHeight() + colorPicker.getBackgroundHeight() + 3*innerSectionMargin),
                                               cardIndex, config.players.get(cardIndex));
     
     Textarea controllerInstructions = new Textarea(controlP5, "Player " + (cardIndex + 1) + " Controls");
-    controllerInstructions.setPosition(innerSectionPadding, innerSectionPadding + nameField.getHeight() + controllerSelector.getHeight() + 2*innerSectionMargin);
+    controllerInstructions.setPosition(innerSectionPadding, innerSectionPadding + nameField.getHeight() + controllerSelector.getHeight() + 4*innerSectionMargin);
     controllerInstructions.setSize(playerCardWidth - 2*innerSectionPadding, playerCard.getBackgroundHeight() - 2*innerSectionPadding - nameField.getHeight() - controllerSelector.getHeight() - 2*innerSectionMargin);
-    controllerInstructions.setFont(BODY_FONT);
+    controllerInstructions.setFont(DETAIL_FONT);
     controllerInstructions.setLineHeight(20);
     controllerInstructions.setColor(PRIMARY_FONT_COLOR);
     //controllerInstructions.setColorBackground(color(255,100));
@@ -232,10 +311,12 @@ class ConfigMenu extends UIComponent {
     controllerInstructions.setText(controllerInstructionsText);
                                                                                                      
     nameField.setGroup(playerCard);
+    colorPicker.setGroup(playerCard);
     controllerSelector.setGroup(playerCard);   
     controllerInstructions.setGroup(playerCard);   
     
     elements.put("Name", nameField);
+    elements.put("Color", colorPicker);
     elements.put("Controller", controllerSelector);
     elements.put("Instructions", controllerInstructions);
   }
@@ -262,15 +343,18 @@ class ConfigMenu extends UIComponent {
     for (Group playerCard : playerCards) {
       int playerCardIndex = playerCards.indexOf(playerCard);
       
-      ControllerSelector controllerSelector = (ControllerSelector) playerCardElements.get(playerCardIndex).get("Controller");
       TypableTextField nameField = (TypableTextField) playerCardElements.get(playerCardIndex).get("Name");
+      ColorPicker colorPicker = (ColorPicker) playerCardElements.get(playerCardIndex).get("Color");
+      ControllerSelector controllerSelector = (ControllerSelector) playerCardElements.get(playerCardIndex).get("Controller");
       Textarea instructions = (Textarea) playerCardElements.get(playerCardIndex).get("Instructions");
       
       controllerSelectors.add(controllerSelector);
       controllerInstructions.add(instructions);
-      if (controllerSelector.newControllerWasSelected()) aNewControllerWasSelected = true;
       
       if (nameField.changed()) config.players.get(playerCardIndex).name = nameField.getText();
+      if (colorPicker.getColorValue() != color(0, 0, 0, 0)) config.players.get(playerCardIndex).spriteColor = color(colorPicker.getArrayValue(0), colorPicker.getArrayValue(1), colorPicker.getArrayValue(2), 255);
+      else config.players.get(playerCardIndex).spriteColor = null;
+      if (controllerSelector.newControllerWasSelected()) aNewControllerWasSelected = true;
     }
     if (aNewControllerWasSelected) {
       for (ControllerSelector controllerSelector : controllerSelectors) {

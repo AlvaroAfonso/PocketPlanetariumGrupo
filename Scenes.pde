@@ -51,12 +51,14 @@ public abstract class Panel {
   public final static int DEFAULT_PRIORITY = 0;
   
   protected PGraphics canvas; 
+  protected String renderer;
   
   protected PVector screenCoords;
   public int priority;
   
   
   public Panel(int panelWidth, int panelHeight, PVector screenCoords, int priority, String renderer) {
+    this.renderer = renderer;
     this.canvas = createGraphics(panelWidth, panelHeight, renderer);
     this.screenCoords = screenCoords;
     this.priority = priority;
@@ -67,6 +69,10 @@ public abstract class Panel {
     renderContent();
     canvas.endDraw();
     image(canvas, screenCoords.x, screenCoords.y);
+  }
+  
+  public void resize(int newWidth, int newHeight) {
+    this.canvas = createGraphics(newWidth, newHeight, renderer);
   }
   
   public abstract void dispose();

@@ -47,6 +47,7 @@ class Player implements Collisionable {
   Control controller;
   
   PImage sprite;
+  Integer spriteColor;
   
   float pitch = 0.0;
   float yaw = 0.0;
@@ -205,8 +206,6 @@ class Player implements Collisionable {
 class PlayerModel {
   
   PGraphics canvas;
-  
-  PImage sprite; // Looking right by default
   Player player;
   
   Tail tail;
@@ -214,7 +213,6 @@ class PlayerModel {
   public PlayerModel(PGraphics canvas, Player player) {
     this.canvas = canvas;
     this.player = player;
-    this.sprite = loadImage("./data/images/Spaceship.png");
     //imageMode(CENTER);
     this.tail = new Tail(canvas, player.position, player.maxSpeed);
   }
@@ -245,7 +243,8 @@ class PlayerModel {
           canvas.imageMode(CENTER);
           canvas.scale(0.001);
           //canvas.scale(0.05);
-          canvas.image(sprite, 0, 0);
+          if (player.spriteColor != null) canvas.tint(player.spriteColor);
+          canvas.image(player.sprite, 0, 0);
           
         canvas.popStyle();
       canvas.popMatrix();

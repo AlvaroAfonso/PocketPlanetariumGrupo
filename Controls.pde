@@ -94,7 +94,7 @@ class ControllerRepository {
             break;
           case ALT_KEYBOARD:
             if (controllerAvailabilityMap.get(ControllerID.ALT_MOUSE_KEYBOARD) == AVAILABLE) {
-                  availableControllers.add(ControllerID.MAIN_KEYBOARD);
+                  availableControllers.add(ControllerID.ALT_KEYBOARD);
             }
             break;
           case POSE_DETECTION:
@@ -145,10 +145,10 @@ class ControllerRepository {
   }
   
   public void freeController(Control targetController) {
-    println("Trying to free " + targetController);
+    //println("Trying to free " + targetController);
     for (Control controller : poseControllers) {
       if (controller == targetController) {
-        println("Freeing " + ControllerID.POSE_DETECTION.name);
+        //println("Freeing " + ControllerID.POSE_DETECTION.name);
         poseDetectionService.unregister((PoseControl) targetController);
         poseControllers.remove(targetController);
         return;
@@ -156,10 +156,11 @@ class ControllerRepository {
     }
     for (ControllerID controllerID : keyboardControllers.keySet()) {
       if (keyboardControllers.get(controllerID) == targetController) {
-        println("Freeing " + controllerID.name);
+        //println("Freeing " + controllerID.name);
         controllerAvailabilityMap.put(controllerID, AVAILABLE);
       }
     }
+    println(controllerAvailabilityMap);
   }
   
   public ControllerID getControllerID(Control controller) {
