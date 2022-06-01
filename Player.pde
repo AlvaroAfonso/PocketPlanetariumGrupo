@@ -475,7 +475,7 @@ class BulletModel {
   }
   
   public void displayExplodingAnimation() {
-    if (explosionAnimationFrame > trackedBullet.explosionDuration) return;
+    if (explosionAnimationFrame > trackedBullet.explosionDuration) return; 
     canvas.pushStyle();
       //canvas.fill(color(255, 245, 170, 255 - 255 * (((float)explosionAnimationFrame+1) / (float) trackedBullet.explosionDuration)));
       canvas.fill(color(255, 245, 200));

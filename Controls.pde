@@ -36,7 +36,7 @@ enum ControllerID {
   POSE_DETECTION("Pose Detection", new String[] { "Use your LEFT HAND relative to your LEFT SHOULDER to MOVE.",
                                                   "Moving your LEFT HAND over your LEFT SHOULDER makes the ship move forward",
                                                   "Use your RIGHT HAND relative to your RIGHT SHOULDER to MOVE THE CAMERA.",
-                                                  "Turn your HEAD to your RIGHT, touching your RIGHT SHOULDER with your RIGHT EAR, to SHOOT"});
+                                                  "To SHOOT, turn your HEAD to your LEFT, touching your LEFT SHOULDER with your LEFT EAR"});
   
   private String name;
   private String[] instructions;
