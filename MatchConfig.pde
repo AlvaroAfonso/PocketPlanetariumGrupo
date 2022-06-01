@@ -9,17 +9,19 @@
 */
 
 
-class VersusMatchConfigurationScene extends Scene {
+class MatchConfigurationScene extends Scene {
 
-  public VersusMatchConfigurationScene() {
+  public MatchConfigurationScene() {
     panels.add(new MenuBackground());
-    panels.add(new ConfigMenu(width, height, new PVector(0,0), Panel.DEFAULT_PRIORITY + 1));
+    panels.add(new ConfigMenu(this, width, height, new PVector(0,0), Panel.DEFAULT_PRIORITY + 1));
   }
 
 }
 
 
 class ConfigMenu extends UIComponent { 
+  
+  MatchConfigurationScene parentScene;
   
   private ControlP5 controlP5;
   
@@ -33,7 +35,7 @@ class ConfigMenu extends UIComponent {
   DraggableSlider orbitSpeed;
   
   ArrayList<Group> playerCards;
-  ArrayList<HashMap<String, Controller>> playerCardElements;
+  ArrayList<HashMap<String, Object>> playerCardElements;
   int activePlayerCards;
   int playerCardWidth;
   
@@ -46,11 +48,14 @@ class ConfigMenu extends UIComponent {
   int innerSectionPadding;
   int innerSectionMargin;
   
-  public ConfigMenu(int componentWidth, int componentHeight, PVector screenCoords, int priority) {
+  public ConfigMenu(MatchConfigurationScene parentScene, int componentWidth, int componentHeight, PVector screenCoords, int priority) {
     super(componentWidth, componentHeight,  screenCoords, priority);
+    this.parentScene = parentScene;
     controlP5 = new ControlP5(appRoot);
     controlP5.setGraphics(this.canvas, (int) this.screenCoords.x, (int) this.screenCoords.y);
     controlP5.setBackground(BG_COLOR);
+    
+    soundsManager.playBackgroundMusic(BackgroundMusic.AMBIENCE);
     
     padding = (int) (0.03 * componentWidth);
     sectionMargin = (int) (0.025 * componentWidth);
@@ -178,8 +183,9 @@ class ConfigMenu extends UIComponent {
       playerCard.setPosition(padding + cardIndex*playerCardWidth + cardIndex*sectionMargin, 
                            padding + generalSettingsCard.getBackgroundHeight() + sectionMargin);
       
-      playerCardElements.get(cardIndex).get("Name").setWidth(playerCardWidth/3 - 2*innerSectionPadding);
-      playerCardElements.get(cardIndex).get("Controller").setWidth((int)(playerCardWidth/1.5) - 2*innerSectionPadding);
+      ((Controller) playerCardElements.get(cardIndex).get("Name")).setWidth(playerCardWidth/3 - 2*innerSectionPadding);
+      ((Controller) playerCardElements.get(cardIndex).get("Controller")).setWidth((int)(playerCardWidth/1.5) - 2*innerSectionPadding);
+      ((ControllerGroup) playerCardElements.get(cardIndex).get("Instructions")).setWidth(playerCardWidth - 2*innerSectionPadding);
       
       playerCard.update();
     }
@@ -197,7 +203,7 @@ class ConfigMenu extends UIComponent {
               ;      
     playerCards.add(playerCard);
     
-    HashMap<String, Controller> elements = new HashMap();
+    HashMap<String, Object> elements = new HashMap();
     playerCardElements.add(elements);
     
     TypableTextField nameField = new TypableTextField(controlP5, "Player " + (cardIndex + 1) + " Name", 
@@ -209,12 +215,29 @@ class ConfigMenu extends UIComponent {
                                               (int)(playerCardWidth/1.5) - 2*innerSectionPadding,
                                               new PVector(innerSectionPadding, innerSectionPadding + nameField.getHeight() + innerSectionMargin),
                                               cardIndex, config.players.get(cardIndex));
+    
+    Textarea controllerInstructions = new Textarea(controlP5, "Player " + (cardIndex + 1) + " Controls");
+    controllerInstructions.setPosition(innerSectionPadding, innerSectionPadding + nameField.getHeight() + controllerSelector.getHeight() + 2*innerSectionMargin);
+    controllerInstructions.setSize(playerCardWidth - 2*innerSectionPadding, playerCard.getBackgroundHeight() - 2*innerSectionPadding - nameField.getHeight() - controllerSelector.getHeight() - 2*innerSectionMargin);
+    controllerInstructions.setFont(BODY_FONT);
+    controllerInstructions.setLineHeight(20);
+    controllerInstructions.setColor(PRIMARY_FONT_COLOR);
+    //controllerInstructions.setColorBackground(color(255,100));
+    controllerInstructions.setColorForeground(SECONDARY_COLOR);           
+    
+    String controllerInstructionsText = "";
+    for (String line : controllerRepository.getControllerID(config.players.get(cardIndex).controller).instructions) {
+      controllerInstructionsText += line + "\n";
+    }
+    controllerInstructions.setText(controllerInstructionsText);
                                                                                                      
     nameField.setGroup(playerCard);
     controllerSelector.setGroup(playerCard);   
+    controllerInstructions.setGroup(playerCard);   
     
     elements.put("Name", nameField);
     elements.put("Controller", controllerSelector);
+    elements.put("Instructions", controllerInstructions);
   }
   
   @Override
@@ -234,14 +257,17 @@ class ConfigMenu extends UIComponent {
     
     // Player Cards
     ArrayList<ControllerSelector> controllerSelectors = new ArrayList();
+    ArrayList<Textarea> controllerInstructions = new ArrayList();
     boolean aNewControllerWasSelected = false;
     for (Group playerCard : playerCards) {
       int playerCardIndex = playerCards.indexOf(playerCard);
       
       ControllerSelector controllerSelector = (ControllerSelector) playerCardElements.get(playerCardIndex).get("Controller");
       TypableTextField nameField = (TypableTextField) playerCardElements.get(playerCardIndex).get("Name");
+      Textarea instructions = (Textarea) playerCardElements.get(playerCardIndex).get("Instructions");
       
       controllerSelectors.add(controllerSelector);
+      controllerInstructions.add(instructions);
       if (controllerSelector.newControllerWasSelected()) aNewControllerWasSelected = true;
       
       if (nameField.changed()) config.players.get(playerCardIndex).name = nameField.getText();
@@ -249,6 +275,13 @@ class ConfigMenu extends UIComponent {
     if (aNewControllerWasSelected) {
       for (ControllerSelector controllerSelector : controllerSelectors) {
         controllerSelector.updateAvailableControllers();
+      }
+      for (Textarea instructions : controllerInstructions) {
+        String controllerInstructionsText = "";
+        for (String line : controllerRepository.getControllerID(config.players.get(controllerInstructions.indexOf(instructions)).controller).instructions) {
+          controllerInstructionsText += line + "\n";
+        }
+        instructions.setText(controllerInstructionsText);
       }
     }
     
@@ -258,6 +291,7 @@ class ConfigMenu extends UIComponent {
   
    @Override
   public void dispose() {
+    parentScene = null;
     controlP5.dispose();
     controlP5.setVisible(false);
     controlP5.setAutoDraw(false);

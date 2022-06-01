@@ -43,6 +43,9 @@ public class VersusMatchConfig {
   
   public void addPlayer(Player newPlayer) {
     players.add(newPlayer);
+    newPlayer.setLives(playerLives);
+    newPlayer.setMaxSpeed(playerSpeed);
+    newPlayer.setBulletSpeed(bulletSpeed);
   }
   
   public void removePlayer(Player playerToRemove) {
@@ -394,12 +397,13 @@ class GameOverModal extends UIComponent {
   protected void renderContent() {    
     if (returnToSettingsButton.wasClicked()) {
       parentScene.dispose();
-      switchScene(new VersusMatchConfigurationScene());
+      switchScene(new MatchConfigurationScene());
     }
   }
   
   @Override
   public void dispose() {
+    parentScene = null;
     controlP5.setBackground(color(0, 0, 0, 0));
     controlP5.dispose();
     controlP5.setVisible(false);

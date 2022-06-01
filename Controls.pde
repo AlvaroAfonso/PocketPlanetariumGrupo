@@ -17,16 +17,33 @@ import oscP5.*;
 1. GENERAL CONTROL
 --------------------------------*/
 enum ControllerID {
-  MAIN_MOUSE_KEYBOARD("Mouse & Keyboard [WASD]"),
-  ALT_MOUSE_KEYBOARD("Mouse & Keyboard [IJKL]"),
-  MAIN_KEYBOARD("Keyboard [WASD]"),
-  ALT_KEYBOARD("Keyboard [IJKL]"),
-  POSE_DETECTION("Pose Detection");
+  MAIN_MOUSE_KEYBOARD("Mouse & Keyboard [WASD]", new String[] { "WASD keys -> Movement",
+                                                                "C key -> Shoot",
+                                                                "Mouse -> Move Camera"}),
+                                                                
+  ALT_MOUSE_KEYBOARD("Mouse & Keyboard [IJKL]", new String[] { "IJKL keys -> Movement",
+                                                               "B key -> Shoot",
+                                                               "Mouse -> Move Camera"}),
+                                                               
+  MAIN_KEYBOARD("Keyboard [WASD]", new String[] { "WASD keys -> Movement",
+                                                  "C -> Shoot",
+                                                  "TFGH keys -> Move Camera"}),
+                                                  
+  ALT_KEYBOARD("Keyboard [IJKL]", new String[] { "IJKL keys -> Movement",
+                                                 "B -> Shoot",
+                                                 "Arrow keys -> Move Camera"}),
+                                                 
+  POSE_DETECTION("Pose Detection", new String[] { "Use your LEFT HAND relative to your LEFT SHOULDER to MOVE.",
+                                                  "Moving your LEFT HAND over your LEFT SHOULDER makes the ship move forward",
+                                                  "Use your RIGHT HAND relative to your RIGHT SHOULDER to MOVE THE CAMERA.",
+                                                  "Turn your HEAD to your RIGHT, touching your RIGHT SHOULDER, to SHOOT"});
   
   private String name;
+  private String[] instructions;
   
-  private ControllerID(String name) {
+  private ControllerID(String name, String[] instructions) {
     this.name = name;
+    this.instructions = instructions;
   }
 }
 
@@ -143,6 +160,14 @@ class ControllerRepository {
         controllerAvailabilityMap.put(controllerID, AVAILABLE);
       }
     }
+  }
+  
+  public ControllerID getControllerID(Control controller) {
+    if (controller.getClass() == PoseControl.class) return ControllerID.POSE_DETECTION;
+    for (ControllerID controllerID : keyboardControllers.keySet()) {
+      if (keyboardControllers.get(controllerID) == controller) return controllerID;
+    }
+    return null;
   }
   
   public String getControllerName(Control controller) {

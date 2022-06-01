@@ -82,6 +82,7 @@ class Player implements Collisionable {
   public void setLives(int lives) {
     this.lives = lives;
     if (lives <= 0) this.isDefeated = true;
+    if (lives > 0) this.isDefeated = false;
   }
   
   public void setMaxSpeed(int maxSpeed) {

@@ -29,7 +29,7 @@ public void loadFonts() {
   TITLE_FONT = createFont("Arial Bold", TITLE_SIZE, true);
   HEADING_FONT = createFont("Arial Bold", HEADING_SIZE, true);
   BODY_FONT = createFont("Arial Bold", BODY_SIZE, true);
-  BODY_FONT = createFont("Arial Bold", DETAIL_SIZE, true);
+  DETAIL_FONT = createFont("Arial Bold", DETAIL_SIZE, true);
   CALL_TO_ACTION_FONT = createFont("Arial Bold", CALL_TO_ACTION_SIZE, true);
 }
 

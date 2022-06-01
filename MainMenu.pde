@@ -49,8 +49,6 @@ class Menu extends UIComponent {
     controlP5.setBackground(BG_COLOR);
     controlP5.setGraphics(this.canvas, (int) this.screenCoords.x, (int) this.screenCoords.y); 
     
-    soundsManager.playBackgroundMusic(BackgroundMusic.AMBIENCE);
-    
     buttonWidth = canvas.width - 60;
     buttonHeight = 30;
     
@@ -74,7 +72,7 @@ class Menu extends UIComponent {
    @Override
    protected void renderContent() {
      if (!playButton.wasClicked()) return;
-     switchScene(new VersusMatchConfigurationScene());
+     switchScene(new MatchConfigurationScene());
    }
    
    @Override

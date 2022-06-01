@@ -67,5 +67,5 @@ synchronized void draw() {
   prevTime = time;
   
   currentScene.display();
-  
+  soundsManager.update();
 }
