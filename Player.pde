@@ -135,9 +135,8 @@ class Player implements Collisionable {
     if (controller.moveStop) {
       speed = new PVector(0, 0, 0);
       acceleration = new PVector(0, 0, 0);
-      return;
     }
-    
+   
     if (controller.activateBlaster) blaster.shoot(PVector.add(position, direction.copy().setMag(4*earthRadius)), direction); 
     
     // Sound
@@ -311,7 +310,7 @@ class Bullet  implements Collisionable {
     float shortestDistance2Player = MAX_FLOAT;
     Player closestPlayer = null; 
     float cone_height = 900;
-    float base_radius = 600;
+    float base_radius = 200;
     for (Player player : players) {
       if (player.isDefeated) continue; 
       float cone_dist = PVector.dot(PVector.sub(player.position, this.position), this.speed.copy().setMag(cone_height));

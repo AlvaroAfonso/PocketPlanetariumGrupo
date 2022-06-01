@@ -36,7 +36,7 @@ enum ControllerID {
   POSE_DETECTION("Pose Detection", new String[] { "Use your LEFT HAND relative to your LEFT SHOULDER to MOVE.",
                                                   "Moving your LEFT HAND over your LEFT SHOULDER makes the ship move forward",
                                                   "Use your RIGHT HAND relative to your RIGHT SHOULDER to MOVE THE CAMERA.",
-                                                  "Turn your HEAD to your RIGHT, touching your RIGHT SHOULDER, to SHOOT"});
+                                                  "Turn your HEAD to your RIGHT, touching your RIGHT SHOULDER with your RIGHT EAR, to SHOOT"});
   
   private String name;
   private String[] instructions;
@@ -486,7 +486,7 @@ public class PoseControl extends Control {
   private CommandDelayer latencyGen;
   
   public PoseControl() {
-    PlayerCommand[] commands = {PlayerCommand.MOVE_FORWARD, PlayerCommand.MOVE_BACKWARD, PlayerCommand.MOVE_LEFT, PlayerCommand.MOVE_RIGHT};
+    PlayerCommand[] commands = {PlayerCommand.MOVE_FORWARD, PlayerCommand.MOVE_BACKWARD, PlayerCommand.MOVE_LEFT, PlayerCommand.MOVE_RIGHT, PlayerCommand.SHOOT};
     latencyGen = new CommandDelayer(commands, 4);
     cameraSensitivity = 3.5;
     cameraSensitivityOffset = 80;
@@ -496,9 +496,10 @@ public class PoseControl extends Control {
   public void update(Pose newPose) {
     parseMovementControls(newPose,"leftWrist","leftShoulder");
     parseCameraControls(newPose,"rightWrist","rightShoulder");
+    parseBlasterControls(newPose, "leftEar", "rightEar");
   }
   
-  private void parseMovementControls(Pose pose, String controlPart, String anchorPart){
+  private void parseMovementControls(Pose pose, String controlPart, String anchorPart) {
     PVector controlCoords = pose.getPartCoords(controlPart);
     PVector anchorCoords = pose.getPartCoords(anchorPart);
     
@@ -520,7 +521,7 @@ public class PoseControl extends Control {
   }
   
   
-  private void parseCameraControls(Pose pose, String controlPart, String anchorPart){  
+  private void parseCameraControls(Pose pose, String controlPart, String anchorPart) {  
     PVector controlCoords = pose.getPartCoords(controlPart);
     PVector anchorCoords = pose.getPartCoords(anchorPart);
     
@@ -533,6 +534,17 @@ public class PoseControl extends Control {
     if (controlCoords.x - anchorCoords.x < -cameraSensitivityOffset)  playerFocus.x = width/2 - cameraSensitivityOffset - 50;
     else if (controlCoords.x - anchorCoords.x > cameraSensitivityOffset)  playerFocus.x = width/2 + cameraSensitivityOffset + 50;
     else  playerFocus.x = width/2;
+  }
+  
+  private void parseBlasterControls(Pose pose, String controlPart, String anchorPart) {
+    PVector controlCoords = pose.getPartCoords(controlPart);
+    PVector anchorCoords = pose.getPartCoords(anchorPart);
+    
+    if (controlCoords == null || anchorCoords == null) return;
+    
+    println((controlCoords.y - anchorCoords.y) + " " + (0.7*cameraSensitivityOffset));
+    if(controlCoords.y - anchorCoords.y >= 0.5*cameraSensitivityOffset) activateBlaster = latencyGen.delayedFlagValue(PlayerCommand.SHOOT, true);
+    else  activateBlaster = latencyGen.delayedFlagValue(PlayerCommand.SHOOT, false);
   }
   
   @Override
@@ -647,9 +659,13 @@ public class CommandDelayer {
     int latencyCounter = latencyCounters.get(command);
     boolean previousFlagValue = previousFlagValues.get(command);
     
-    if (commandFlagValue == previousFlagValue) return commandFlagValue;
+    if (commandFlagValue == previousFlagValue) {
+      return commandFlagValue;
+    }
     
-    if (latencyCounter++ == latency) {
+    latencyCounters.put(command, latencyCounter + 1);
+    
+    if (latencyCounter == latency) {
       latencyCounters.put(command, 0);
       previousFlagValues.put(command, commandFlagValue);
       return commandFlagValue;
