@@ -68,13 +68,15 @@ class Player implements Collisionable {
   
   Blaster blaster;
   
-  public Player(String name, Control controller, PVector startingPosition) {
+  public Player(String name, int id, Control controller, PVector startingPosition) {
     this.name = name;
+    this.id = id;
     this.controller = controller;
     this.position = startingPosition;
     this.sprite = loadImage("./data/images/Spaceship.png");
     this.hitbox = new HitBox(sprite, 0.001, this.position);
     this.blaster = new Blaster(50);
+    soundsManager.registerEngine(this.id);
   }
   
   public void setLives(int lives) {
@@ -138,12 +140,19 @@ class Player implements Collisionable {
     if (controller.activateBlaster) blaster.shoot(PVector.add(position, direction.copy().setMag(4*earthRadius)), direction); 
     
     // Sound
-    if (acceleration.mag() > 0 && countFrame++ == 0) {
-      soundsManager.startSpaceshipEngine();
-      if(countFrame > 5) countFrame = 0;       
+    if (acceleration.mag() > 0) {
+      if(countFrame==0){
+        soundsManager.startSpaceshipEngine(id);
+        countFrame++;
+      } else {
+        countFrame++;
+        if(countFrame>=5){
+          countFrame=0;
+        }
+      }
     } else {
-      soundsManager.stopSpaceshipEngine();
-      countFrame = 0;
+      soundsManager.stopSpaceshipEngine(id);
+      countFrame=0;
     }
     
     speed.add(acceleration);
@@ -293,14 +302,15 @@ class Bullet  implements Collisionable {
     speed = new PVector(0, 0, 0);
     exploded = true;
     timeout = explosionDuration;
+    soundsManager.explosionFX();
   }
   
   public void trackPlayers(ArrayList<Player> players) {
     if (this.exploded) return;
     float shortestDistance2Player = MAX_FLOAT;
     Player closestPlayer = null; 
-    float cone_height = 500*earthRadius;
-    float base_radius = 50*earthRadius;
+    float cone_height = 900;
+    float base_radius = 600;
     for (Player player : players) {
       if (player.isDefeated) continue; 
       float cone_dist = PVector.dot(PVector.sub(player.position, this.position), this.speed.copy().setMag(cone_height));
@@ -369,6 +379,7 @@ class Blaster {
   
   public void shoot(PVector position, PVector direction) {
     if (freeBulletSpots.size() > 0 && cooldown <= 0) {
+      soundsManager.blasterFX();
       bullets[freeBulletSpots.pop()] = new Bullet(position, direction, baseSpeed);
       cooldown = 30;
     }

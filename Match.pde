@@ -112,6 +112,8 @@ public class MatchScene extends Scene {
       panels.add(new PlayerHUD(player, viewportWidth, viewportHeight, viewportCoords, Panel.DEFAULT_PRIORITY + 1));
       
     }
+    
+    soundsManager.playBackgroundMusic(BackgroundMusic.BATTLE);
 
     appRoot.registerMethod("pre", this);
     

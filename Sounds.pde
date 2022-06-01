@@ -1,5 +1,9 @@
 import processing.sound.*;
 
+public enum BackgroundMusic  {
+  AMBIENCE,
+  BATTLE
+}
 
 class SoundsManager {
   
@@ -7,25 +11,60 @@ class SoundsManager {
   private SoundFile spaceshipTheme;
   //private SoundFile spaceshipEngine;
   
-  private SinOsc spaceshipEngine;
-  private boolean selectFreq = true;
+  private SinOsc[] spaceshipEngine = new SinOsc[4];
+  private SinOsc blasterSound;
+  private SinOsc explosionSound;
+  private int explosionCountdown=0;;
+  private float freqBlaster = 0;    // used for countdown
+  private boolean[] selectFreq = new boolean[4];
   private float freqHighNave = 500;
   private float freqLowNave = 450;
+  private float freqHighBlaster= 860;
+  private float freqLowBlaster = 740;
+  private float baseFreqExplosion = 260;
+  private float currentFreqExplosion;
   
   SoundsManager() {
     ambientMusic = new SoundFile(appRoot, "./data/music/mrthenoronha - ambient.wav");
     spaceshipTheme = new SoundFile(appRoot, "./data/music/legend1060 - spaceship theme.wav");
-    //spaceshipEngine = new SoundFile(parent, "./data/music/loumarchais - spaceship movement.wav");
     ambientMusic.amp(0.5);
-    spaceshipEngine = new SinOsc(appRoot);
     spaceshipTheme.amp(0.5);
-    spaceshipEngine.amp(0.5);
+    blasterSound = new SinOsc(appRoot);
+    blasterSound.amp(0.75);
+    explosionSound = new SinOsc(appRoot);
+    explosionSound.amp(0.75);
+    for(int i=0; i<4; i++){
+      spaceshipEngine[i] = null;
+      selectFreq[i] = false;
+    }
   }
   
-  void playBackgroundMusic() {
-    if (mode == GENERAL_VIEW) {
+  void registerEngine(int id){
+    spaceshipEngine[id]=new SinOsc(appRoot);
+    spaceshipEngine[id].amp(0.5);
+  }
+  
+  void blasterFX(){
+    if(freqBlaster<freqLowBlaster){
+      freqBlaster=freqHighBlaster;
+      blasterSound.freq(freqBlaster);
+      blasterSound.play();
+    }
+  }
+  
+  void explosionFX(){
+    if(explosionCountdown<=0){
+      explosionCountdown=51;
+      currentFreqExplosion=baseFreqExplosion;
+      explosionSound.freq(currentFreqExplosion);
+      explosionSound.play();
+    }
+  }
+  
+  void playBackgroundMusic(BackgroundMusic music) {
+    if (music == BackgroundMusic.AMBIENCE) {
       ambientMusic.loop(); 
-    } else {
+    } else if (music == BackgroundMusic.BATTLE) {
       spaceshipTheme.loop();
     }
   }
@@ -41,20 +80,39 @@ class SoundsManager {
     }
   }
   
-  void startSpaceshipEngine() {
-    if(selectFreq){
-    //print(freqHighNave);
-      spaceshipEngine.freq(freqHighNave);
+  void startSpaceshipEngine(int id) {
+    if(selectFreq[id]){
+      spaceshipEngine[id].freq(freqHighNave);
     }else{
       //print(freqLowNave);
-      spaceshipEngine.freq(freqLowNave);
+      spaceshipEngine[id].freq(freqLowNave);
     }
-    selectFreq = !selectFreq;
-    spaceshipEngine.play();
+    selectFreq[id] = !selectFreq[id];
+    spaceshipEngine[id].play();
   }
   
-  void stopSpaceshipEngine() {
-    spaceshipEngine.stop();
+  void stopSpaceshipEngine(int id) {
+    spaceshipEngine[id].stop();
+  }
+  
+  void update(){
+    if(freqBlaster>=freqLowBlaster){
+      freqBlaster-=5;
+      blasterSound.freq(freqBlaster);
+      blasterSound.play();
+    } else{
+      blasterSound.stop();
+    }
+    if(explosionCountdown>0){
+      if(explosionCountdown%3==0){
+        currentFreqExplosion += random(-15,15);
+        explosionSound.freq(currentFreqExplosion);
+        explosionSound.play();
+      }
+      explosionCountdown--;
+    } else{
+      explosionSound.stop();
+    }
   }
   
 }

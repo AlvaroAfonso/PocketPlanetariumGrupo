@@ -36,7 +36,7 @@ void setup() {
   noStroke();
   currentScene = new LoadingScene();
   soundsManager = new SoundsManager();
-  soundsManager.playBackgroundMusic();
+  soundsManager.playBackgroundMusic(BackgroundMusic.AMBIENCE);
   thread("load");
 }
 

@@ -76,8 +76,8 @@ class ConfigMenu extends UIComponent {
   
   private void setupDefaultConfiguration() {
     config = new VersusMatchConfig();
-    config.addPlayer(new Player("Player1", controllerRepository.fetchController(0, ControllerID.MAIN_KEYBOARD), new PVector(random(-40, 4), 0, random(40, 50))));
-    config.addPlayer(new Player("Player2", controllerRepository.fetchController(1, ControllerID.ALT_KEYBOARD), new PVector(random(-40, 4), 0, random(40, 50))));
+    config.addPlayer(new Player("Player1", 0, controllerRepository.fetchController(0, ControllerID.MAIN_KEYBOARD), new PVector(random(-40, 4), 0, random(40, 50))));
+    config.addPlayer(new Player("Player2", 1, controllerRepository.fetchController(1, ControllerID.ALT_KEYBOARD), new PVector(random(-40, 4), 0, random(40, 50))));
     config.setPlayerLives(3);
     config.setPlayerSpeed(600);
     config.setBulletSpeed(500);
@@ -152,7 +152,7 @@ class ConfigMenu extends UIComponent {
   
   private void addPlayer() {
     ControllerID controllerID = controllerRepository.getAvailableControllers().get(0);
-    config.addPlayer(new Player("Player" + (config.players.size() + 1), controllerRepository.fetchController(config.players.size(), controllerID), new PVector(random(-40, 4), 0, random(40, 50))));
+    config.addPlayer(new Player("Player" + (config.players.size() + 1), config.players.size(), controllerRepository.fetchController(config.players.size(), controllerID), new PVector(random(-40, 4), 0, random(40, 50))));
     
     createPlayerConfigurationCard();
   }
