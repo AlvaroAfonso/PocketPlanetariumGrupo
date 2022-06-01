@@ -475,8 +475,13 @@ class BulletModel {
   }
   
   public void displayExplodingAnimation() {
-    bulletMesh.setFill(color(255, 0, 0));
-    canvas.shape(bulletMesh);
+    if (explosionAnimationFrame > trackedBullet.explosionDuration) return;
+    canvas.pushStyle();
+      //canvas.fill(color(255, 245, 170, 255 - 255 * (((float)explosionAnimationFrame+1) / (float) trackedBullet.explosionDuration)));
+      canvas.fill(color(255, 245, 200));
+      canvas.sphere((((float)explosionAnimationFrame+1) / (float) trackedBullet.explosionDuration) * 4*earthRadius);
+    canvas.popStyle();
+    explosionAnimationFrame++;
   }
 
 }
