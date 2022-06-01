@@ -62,20 +62,11 @@ class SoundsManager {
   }
   
   void playBackgroundMusic(BackgroundMusic music) {
-    if (music == BackgroundMusic.AMBIENCE) {
+    if (music == BackgroundMusic.AMBIENCE && !ambientMusic.isPlaying()) {
+      if (spaceshipTheme.isPlaying()) spaceshipTheme.stop();
       ambientMusic.loop(); 
-    } else if (music == BackgroundMusic.BATTLE) {
-      spaceshipTheme.loop();
-    }
-  }
-  
-  void switchBackgroundMusic() {
-    if (mode == GENERAL_VIEW && spaceshipTheme.isPlaying()) {
-      spaceshipTheme.stop();
-      ambientMusic.loop();
-    }
-    if (mode == EXPLORE && ambientMusic.isPlaying()) {
-      ambientMusic.stop();
+    } else if (music == BackgroundMusic.BATTLE && !spaceshipTheme.isPlaying()) {
+      if (ambientMusic.isPlaying()) ambientMusic.stop();
       spaceshipTheme.loop();
     }
   }
