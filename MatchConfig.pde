@@ -12,8 +12,8 @@
 class VersusMatchConfigurationScene extends Scene {
 
   public VersusMatchConfigurationScene() {
-    viewports.add(new MenuBackground());
-    uiComponents.add(new ConfigMenu(width, height, new PVector(0,0), Panel.DEFAULT_PRIORITY + 1000));
+    panels.add(new MenuBackground());
+    panels.add(new ConfigMenu(width, height, new PVector(0,0), Panel.DEFAULT_PRIORITY + 1));
   }
 
 }
@@ -64,7 +64,7 @@ class ConfigMenu extends UIComponent {
     setupDefaultGeneralSettings();
     setupDefaultPlayerCards();
     
-    playButton = new ClickableButton(controlP5, "Start!");
+    playButton = new ClickableButton(controlP5, "FIGHT!");
     playButton.setPosition(canvas.width/2 - buttonWidth/2, canvas.height - buttonHeight - sectionMargin)
                .setSize((int) buttonWidth, (int) buttonHeight)
                .setFont(CALL_TO_ACTION_FONT)
@@ -76,12 +76,13 @@ class ConfigMenu extends UIComponent {
   
   private void setupDefaultConfiguration() {
     config = new VersusMatchConfig();
-    config.playerLives = 3;
-    config.playerMaxSpeed = 600;
-    config.bulletSpeed = 500;
-    config.planetOrbitationSpeedUp = 1;
-    config.addPlayer(new Player("Player1", controllerRepository.fetchController(0, ControllerID.MAIN_KEYBOARD), new PVector(20, 0, 50)));
-    config.addPlayer(new Player("Player2", controllerRepository.fetchController(1, ControllerID.ALT_KEYBOARD), new PVector(-20, 0, 50)));
+    config.addPlayer(new Player("Player1", controllerRepository.fetchController(0, ControllerID.MAIN_KEYBOARD), new PVector(random(-40, 4), 0, random(40, 50))));
+    config.addPlayer(new Player("Player2", controllerRepository.fetchController(1, ControllerID.ALT_KEYBOARD), new PVector(random(-40, 4), 0, random(40, 50))));
+    config.setPlayerLives(3);
+    config.setPlayerSpeed(600);
+    config.setBulletSpeed(500);
+    config.setOrbitationSpeedUp(1);
+    
   }
   
   private void setupDefaultGeneralSettings() {
@@ -123,13 +124,13 @@ class ConfigMenu extends UIComponent {
                                    sliderWidth, sliderHeight, 
                                    new PVector(generalSettingsCard.getWidth()/2 - sliderWidth/2, 
                                                innerSectionPadding + playerSpeed.getHeight() + bulletSpeed.getHeight() + 2*innerSectionMargin),
-                                   1, 10, 10); 
+                                   1, 1000, 100); 
                                    
     playerNum.setValue(config.players.size());
     playerLives.setValue(config.playerLives);
-    playerSpeed.setValue(config.playerMaxSpeed);
+    playerSpeed.setValue(config.playerSpeed);
     bulletSpeed.setValue(config.bulletSpeed);
-    orbitSpeed.setValue(config.planetOrbitationSpeedUp);                                   
+    orbitSpeed.setValue(config.orbitationSpeedUp);                                   
                                    
     playerNum.setGroup(generalSettingsCard);
     playerLives.setGroup(generalSettingsCard);
@@ -151,7 +152,7 @@ class ConfigMenu extends UIComponent {
   
   private void addPlayer() {
     ControllerID controllerID = controllerRepository.getAvailableControllers().get(0);
-    config.addPlayer(new Player("Player" + (config.players.size() + 1), controllerRepository.fetchController(config.players.size(), controllerID), new PVector(20, 0, 50)));
+    config.addPlayer(new Player("Player" + (config.players.size() + 1), controllerRepository.fetchController(config.players.size(), controllerID), new PVector(random(-40, 4), 0, random(40, 50))));
     
     createPlayerConfigurationCard();
   }
@@ -178,7 +179,7 @@ class ConfigMenu extends UIComponent {
                            padding + generalSettingsCard.getBackgroundHeight() + sectionMargin);
       
       playerCardElements.get(cardIndex).get("Name").setWidth(playerCardWidth/3 - 2*innerSectionPadding);
-      playerCardElements.get(cardIndex).get("Controller").setWidth(playerCardWidth/2 - 2*innerSectionPadding);
+      playerCardElements.get(cardIndex).get("Controller").setWidth((int)(playerCardWidth/1.5) - 2*innerSectionPadding);
       
       playerCard.update();
     }
@@ -205,7 +206,7 @@ class ConfigMenu extends UIComponent {
     nameField.setValue(config.players.get(cardIndex).name);                                              
     
     ControllerSelector controllerSelector = new ControllerSelector(controlP5, "Player " + (cardIndex + 1) + " Controller",
-                                              playerCardWidth/2 - 2*innerSectionPadding,
+                                              (int)(playerCardWidth/1.5) - 2*innerSectionPadding,
                                               new PVector(innerSectionPadding, innerSectionPadding + nameField.getHeight() + innerSectionMargin),
                                               cardIndex, config.players.get(cardIndex));
                                                                                                      
@@ -221,18 +222,15 @@ class ConfigMenu extends UIComponent {
     // Match Settings
     if (playerNum.getValue() != config.players.size()) {
       while(playerNum.getValue() != config.players.size()) {
-        println("Creating Del Cards");
         if (playerNum.getValue() > config.players.size()) addPlayer();
         if (playerNum.getValue() < config.players.size()) removePlayer();
       }
       updateCards();
     }
-    if (playerLives.changed()) config.playerLives = (int) playerLives.getValue();
-    if (playerSpeed.changed()) config.playerMaxSpeed = (int) playerSpeed.getValue();
-    if (bulletSpeed.changed()) config.bulletSpeed = (int) bulletSpeed.getValue();
-    if (orbitSpeed.changed()) config.planetOrbitationSpeedUp = (int) orbitSpeed.getValue();
-    
-    println(config.playerLives + " " + config.playerMaxSpeed + " " + config.bulletSpeed + " " + config.planetOrbitationSpeedUp);
+    if (playerLives.changed()) config.setPlayerLives((int) playerLives.getValue());
+    if (playerSpeed.changed()) config.setPlayerSpeed((int) playerSpeed.getValue());
+    if (bulletSpeed.changed()) config.setBulletSpeed((int) bulletSpeed.getValue());
+    if (orbitSpeed.changed()) config.setOrbitationSpeedUp((int) orbitSpeed.getValue());
     
     // Player Cards
     ArrayList<ControllerSelector> controllerSelectors = new ArrayList();
@@ -255,7 +253,7 @@ class ConfigMenu extends UIComponent {
     }
     
     // Start Game
-    if (playButton.wasClicked()) switchScene(new VersusMatchScene(config));
+    if (playButton.wasClicked()) switchScene(new MatchScene(config));
   }
   
    @Override

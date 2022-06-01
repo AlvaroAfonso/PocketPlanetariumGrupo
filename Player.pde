@@ -41,9 +41,12 @@ class Player implements Collisionable {
 
   String name;
   int id;
+  int lives;
+  boolean isDefeated = false;
+  
   Control controller;
   
-  PVector spaceShipColor;
+  PImage sprite;
   
   float pitch = 0.0;
   float yaw = 0.0;
@@ -69,20 +72,22 @@ class Player implements Collisionable {
     this.name = name;
     this.controller = controller;
     this.position = startingPosition;
-    this.hitbox = new HitBox(loadImage("./data/images/Spaceship.png"), 0.001, this.position);
+    this.sprite = loadImage("./data/images/Spaceship.png");
+    this.hitbox = new HitBox(sprite, 0.001, this.position);
     this.blaster = new Blaster(50);
   }
   
   public void setLives(int lives) {
-  
+    this.lives = lives;
+    if (lives <= 0) this.isDefeated = true;
   }
   
   public void setMaxSpeed(int maxSpeed) {
-  
+    this.maxSpeed = maxSpeed * LIGHT_SPEED;
   }
   
   public void setBulletSpeed(int bulletSpeed) {
-  
+    this.blaster.setSpeed(bulletSpeed);
   }
   
   public void switchController(Control controller) {
@@ -253,7 +258,7 @@ class PlayerModel {
 --------------------------------*/
 class Bullet  implements Collisionable {
   
-  float baseSpeed = 300 * LIGHT_SPEED / DISTANCE_SCALE / 60;
+  float baseSpeed;
   
   PVector position;
   PVector direction;
@@ -266,9 +271,10 @@ class Bullet  implements Collisionable {
   
   Player trackedPlayer;
   
-  public Bullet(PVector position, PVector direction) {
+  public Bullet(PVector position, PVector direction, float baseSpeed) {
     this.position = position.copy();
     this.direction = direction.copy();
+    this.baseSpeed = baseSpeed;
     this.speed = this.direction.copy().setMag(baseSpeed);
     this.timeout = 1500;
     this.hitbox = new HitBox(2*earthRadius, this.position);
@@ -296,6 +302,7 @@ class Bullet  implements Collisionable {
     float cone_height = 500*earthRadius;
     float base_radius = 50*earthRadius;
     for (Player player : players) {
+      if (player.isDefeated) continue; 
       float cone_dist = PVector.dot(PVector.sub(player.position, this.position), this.speed.copy().setMag(cone_height));
       if (cone_dist > cone_height || cone_dist < 0) continue;
       float cone_radius = (cone_dist / cone_height) * base_radius;
@@ -320,6 +327,7 @@ class Bullet  implements Collisionable {
     this.hitbox.position = position;
     
     for (Collisionable body : bodies) {
+      if (body.getClass() == Player.class && ((Player) body).isDefeated) continue;
       if (this.hitbox.isCollidingWith(body)) collidedBodiesIndexes.add(bodies.indexOf(body));
     }
     
@@ -342,6 +350,7 @@ class Blaster {
   Bullet[] bullets;
   Stack<Integer> freeBulletSpots;
   int maxBullets;
+  float baseSpeed = 300 * LIGHT_SPEED / DISTANCE_SCALE / 60;
   
   int cooldown = 0;
   
@@ -354,9 +363,13 @@ class Blaster {
     }
   }
   
+  public void setSpeed(int baseSpeed) {
+    this.baseSpeed = baseSpeed * LIGHT_SPEED / DISTANCE_SCALE / 60;
+  }
+  
   public void shoot(PVector position, PVector direction) {
     if (freeBulletSpots.size() > 0 && cooldown <= 0) {
-      bullets[freeBulletSpots.pop()] = new Bullet(position, direction);
+      bullets[freeBulletSpots.pop()] = new Bullet(position, direction, baseSpeed);
       cooldown = 30;
     }
   }

@@ -158,6 +158,13 @@ class World {
     }
   }
   
+  public void setSpeedUp(int speedUp) {
+    if (speedUp < 1) SPEED_FACTOR = 1;
+    else if (speedUp > 1000) SPEED_FACTOR = 1000;
+    else SPEED_FACTOR = speedUp;
+    updateTimeParams();
+  }
+  
   public void speedUpTime() {
     SPEED_FACTOR = SPEED_FACTOR == 1 ? SPEED_FACTOR + 9 : SPEED_FACTOR + 10;
     if (SPEED_FACTOR > 10000) SPEED_FACTOR = 10000;

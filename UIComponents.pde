@@ -2,6 +2,8 @@ import controlP5.*;
 
 
 public final int BG_COLOR = color(2, 48, 71, 100);
+public final int BG_DEFEAT_COLOR = color(10, 2, 1, 255);
+public final int BG_TIE_COLOR = color(251, 133, 0, 100);
 public final int PRIMARY_COLOR = color(33, 158, 188, 255);
 public final int SECONDARY_COLOR = color(251, 133, 0, 255);
 public final int INTERACT_COLOR = color(255, 183, 3, 255);
@@ -214,6 +216,7 @@ class ControllerSelector extends ScrollableList {
     
     this.playerID = playerID;
     this.player = player;
+    println(player.name);
     this.selectedController = controllerRepository.getControllerName(player.controller);
     newControllerSelected = false;
     updateAvailableControllers();

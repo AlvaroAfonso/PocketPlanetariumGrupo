@@ -3,7 +3,7 @@
 class LoadingScene extends Scene {
   
   public LoadingScene() {
-    uiComponents.add(new UIComponent(width, height, new PVector(0,0), UIComponent.DEFAULT_PRIORITY) {
+    panels.add(new UIComponent(width, height, new PVector(0,0), Panel.DEFAULT_PRIORITY) {
       
       private float opacity = 0.0;
       private final String loadingText = "LOADING...";

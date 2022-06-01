@@ -2,8 +2,8 @@
 class MainMenu extends Scene {
 
   public MainMenu() {
-    viewports.add(new MenuBackground());
-    uiComponents.add(new Menu((int) (width/6), (int) (height/3), new PVector(width/2, height/2), "Battle4CIU"));
+    panels.add(new MenuBackground());
+    panels.add(new Menu((int) (width/6), (int) (height/3), new PVector(width/2, height/2), "Battle4CIU"));
   }
   
 }

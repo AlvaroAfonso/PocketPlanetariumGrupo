@@ -90,7 +90,7 @@ class ControllerRepository {
   
   public Control fetchController(int requesterID, ControllerID targetController) {
     Control controller = null;
-    
+    println("Requested " + targetController.name + " " + (controllerAvailabilityMap.get(targetController) == AVAILABLE));
     if (controllerAvailabilityMap.get(targetController) != AVAILABLE) return controller;
     
     if (targetController == ControllerID.POSE_DETECTION) {
@@ -121,14 +121,17 @@ class ControllerRepository {
         controllerAvailabilityMap.put(controllerID, !AVAILABLE);
         
         return keyboardControllers.get(controllerID);
-      }  
+      } 
+      if (controllerID.name.equals(targetControllerName)) println("Requested " + targetControllerName + " " + (controllerAvailabilityMap.get(controllerID) == AVAILABLE));
     }   
     return controller;
   }
   
   public void freeController(Control targetController) {
+    println("Trying to free " + targetController);
     for (Control controller : poseControllers) {
       if (controller == targetController) {
+        println("Freeing " + ControllerID.POSE_DETECTION.name);
         poseDetectionService.unregister((PoseControl) targetController);
         poseControllers.remove(targetController);
         return;
@@ -136,6 +139,7 @@ class ControllerRepository {
     }
     for (ControllerID controllerID : keyboardControllers.keySet()) {
       if (keyboardControllers.get(controllerID) == targetController) {
+        println("Freeing " + controllerID.name);
         controllerAvailabilityMap.put(controllerID, AVAILABLE);
       }
     }
@@ -291,7 +295,7 @@ class AltKeyboardMap extends KeyboardMap {
     bindings.put(PlayerCommand.MOVE_UP, new Key('u'));
     bindings.put(PlayerCommand.MOVE_DOWN, new Key('o'));
     bindings.put(PlayerCommand.STOP, new Key('p'));
-    bindings.put(PlayerCommand.SHOOT, new Key('n'));
+    bindings.put(PlayerCommand.SHOOT, new Key('b'));
     
     bindings.put(PlayerCommand.CAMERA_UP, new Key(CODED, UP));
     bindings.put(PlayerCommand.CAMERA_DOWN, new Key(CODED, DOWN));

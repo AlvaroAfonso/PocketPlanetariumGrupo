@@ -12,30 +12,22 @@
 --------------------------------*/
 public abstract class  Scene {
   
-  SortedArrayList<Viewport> viewports;
-  SortedArrayList<UIComponent> uiComponents;
+  SortedArrayList<Panel> panels;
   
   public Scene() {
     PriorityPanelComparator priorityPanelComparator = new PriorityPanelComparator();
-    viewports = new SortedArrayList(priorityPanelComparator);
-    uiComponents = new SortedArrayList(priorityPanelComparator);
+    panels = new SortedArrayList(priorityPanelComparator);
   }
 
   public void display() {
-    for (Viewport viewport : viewports) {
-      viewport.display();      
-    }
-    for (UIComponent uiComponent : uiComponents) {
-      uiComponent.display();      
+    for (Panel panel : panels) {
+      panel.display();      
     }
   }
   
   public void dispose() {
-    for (Viewport viewport : viewports) {
-      viewport.dispose();      
-    }
-    for (UIComponent uiComponent : uiComponents) {
-      uiComponent.dispose();      
+    for (Panel panel : panels) {
+      panel.dispose();      
     }
   }
   
