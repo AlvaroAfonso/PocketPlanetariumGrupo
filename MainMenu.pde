@@ -11,15 +11,17 @@ class MainMenu extends Scene {
 class MenuBackground extends Viewport {
   
   WorldModel gameWorld;
+  private PImage background = loadImage("./data/images/Milky Way.jpg");
   
   public MenuBackground() {
     super(width, height, new PVector(0,0), Panel.DEFAULT_PRIORITY);
     this.gameWorld = new WorldModel(canvas, solarSystemData);
+    background.resize(width, height);
   }
 
    @Override
    protected void renderContent() {
-     canvas.background(0);
+     canvas.background(background); 
      solarSystemData.update();
      gameWorld.display(true);
      canvas.camera(canvas.width/2, canvas.height/2 - 20, 70,   canvas.width/2 - 50, canvas.height/2, 0,   0, 1, 0);

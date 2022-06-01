@@ -194,6 +194,8 @@ public class PlayerViewport extends Viewport {
   private ArrayList<PlayerModel> playerModels;
   private ArrayList<BlasterModel> blasterModels;
   private WorldModel gameWorld;
+  private PImage background = loadImage("./data/images/Milky Way.jpg");
+  
   
   private Camera cam;
   
@@ -201,6 +203,7 @@ public class PlayerViewport extends Viewport {
     super(viewportWidth, viewportHeight, screenCoords, DEFAULT_PRIORITY);
     this.currentPlayer = currentPlayer;
     this.gameWorld = new WorldModel(canvas, world);
+    background.resize(viewportWidth, viewportHeight);
     this.cam = new NativeThirdPersonCamera(canvas, currentPlayer);
     this.playerModels = new ArrayList();
     this.blasterModels = new ArrayList();
@@ -212,7 +215,7 @@ public class PlayerViewport extends Viewport {
   
   @Override
   protected void renderContent() {
-    canvas.background(0); 
+    canvas.background(background); 
     gameWorld.display(true);
     
     for (BlasterModel blasterModel : blasterModels) {

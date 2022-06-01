@@ -18,18 +18,22 @@ import oscP5.*;
 --------------------------------*/
 enum ControllerID {
   MAIN_MOUSE_KEYBOARD("Mouse & Keyboard [WASD]", new String[] { "WASD keys -> Movement",
+                                                                "Q & E keys -> Up & Down Movement",
                                                                 "C key -> Shoot",
                                                                 "Mouse -> Move Camera"}),
                                                                 
   ALT_MOUSE_KEYBOARD("Mouse & Keyboard [IJKL]", new String[] { "IJKL keys -> Movement",
+                                                               "U & O keys -> Up & Down Movement",
                                                                "B key -> Shoot",
                                                                "Mouse -> Move Camera"}),
                                                                
   MAIN_KEYBOARD("Keyboard [WASD]", new String[] { "WASD keys -> Movement",
+                                                  "Q & E keys -> Up & Down Movement",
                                                   "C -> Shoot",
                                                   "TFGH keys -> Move Camera"}),
                                                   
   ALT_KEYBOARD("Keyboard [IJKL]", new String[] { "IJKL keys -> Movement",
+                                                 "U & O keys -> Up & Down Movement",
                                                  "B -> Shoot",
                                                  "Arrow keys -> Move Camera"}),
                                                  
